@@ -20,6 +20,9 @@ START_PC, END_PC, PERIOD = range(3)
 user_data = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Сообщение для первого запуска (при "пробуждении" на Render)
+    await update.message.reply_text("⏳ Please wait... bot is waking up 💤")
+    
     await update.message.reply_text("📍 Send postal code of the start point")
     return START_PC
 
