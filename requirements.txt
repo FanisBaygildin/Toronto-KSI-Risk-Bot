@@ -7,3 +7,4 @@ joblib
 pygeohash
 astral
 python-telegram-bot==20.6
+polyline
