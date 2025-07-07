@@ -73,6 +73,13 @@ def build_weather_row():
 
     full_current_weather.drop('time', axis=1, inplace=True)
 
+    # Загрузка порядка колонок из JSON
+    with open("columns.json", "r") as f:
+        desired_columns = json.load(f)
+
+    # Приводим DataFrame к нужному порядку
+    full_current_weather = full_current_weather[desired_columns]
+
     return full_current_weather.iloc[0]
 
 
