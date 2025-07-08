@@ -73,8 +73,6 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def start_bot():
     import os
-    from dotenv import load_dotenv
-    load_dotenv()
 
     TOKEN = os.getenv("BOT_TOKEN")  # или напрямую вставь строку
 
