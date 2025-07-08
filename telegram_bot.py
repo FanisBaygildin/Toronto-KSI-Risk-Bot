@@ -46,7 +46,7 @@ async def receive_period(update: Update, context: ContextTypes.DEFAULT_TYPE):
     end = user_data['end']
 
     # Получение маршрута
-    route = get_route_coordinates(start, end)
+    route = get_routes(start, end)
 
     # Получение погоды
     weather = build_weather_row()  # например, текущая погода (доработаешь под период)
