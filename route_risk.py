@@ -10,14 +10,7 @@ Original file is located at
 import joblib
 import os
 import numpy as np
-
-class ProbSumModel:
-    def __init__(self, base_model):
-        self.model = base_model
-
-    def predict_proba(self, X):
-        probs = self.model.predict_proba(X)[:, 1]
-        return [[1 - p, p] for p in probs]
+from model import ProbSumModel
 
 # Загрузи модель один раз
 model = joblib.load("model/model.pkl")
