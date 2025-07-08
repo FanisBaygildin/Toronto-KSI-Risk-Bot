@@ -10,7 +10,7 @@ Original file is located at
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
 
-from google_maps_route import get_route_coordinates
+from google_maps_route import get_routes
 from weather_api import build_weather_row
 from route_risk import predict_risk  # ты скоро сделаешь этот файл
 
