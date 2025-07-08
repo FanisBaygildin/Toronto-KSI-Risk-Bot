@@ -6,5 +6,5 @@ scikit-learn
 joblib
 pygeohash
 astral
-python-telegram-bot==20.6
+--upgrade python-telegram-bot==20.6
 polyline
