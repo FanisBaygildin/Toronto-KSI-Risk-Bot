@@ -74,9 +74,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def start_bot():
     import os
 
-    TOKEN = os.getenv("BOT_TOKEN")  # или напрямую вставь строку
-
-    app = ApplicationBuilder().token(TOKEN).build()
+    TOKEN = os.getenv("BOT_TOKEN")  # переменная окружения
+    application = ApplicationBuilder().token(TOKEN).build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
@@ -88,6 +87,6 @@ def start_bot():
         fallbacks=[CommandHandler("cancel", cancel)],
     )
 
-    app.add_handler(conv_handler)
+    application.add_handler(conv_handler)
     print("Бот запущен...")
-    app.run_polling()
+    application.run_polling()
