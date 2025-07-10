@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# Render knows it needs to start this file
 from telegram_bot import start_bot
 
 if __name__ == "__main__":
