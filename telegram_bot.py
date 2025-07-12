@@ -12,7 +12,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 
 from google_maps_route import get_routes
 from weather_api import build_weather_row
-from route_risk import predict_risk  # ты скоро сделаешь этот файл
+from route_risk import predict_risk
 
 # Состояния для ConversationHandler
 START_PC, END_PC, PERIOD = range(3)
