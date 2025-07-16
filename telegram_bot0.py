@@ -1,14 +1,13 @@
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ConversationHandler, filters
-from telegram_bot0 import start, receive_start_pc, START_PC
-import os
+from telegram import Update
+from telegram.ext import ContextTypes, ConversationHandler
 
-app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
+START_PC = 0  # состояние
 
-conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("start", start)],
-    states={START_PC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)]},
-    fallbacks=[],
-)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text("📍 Send postal code of the start point")
+    return START_PC
 
-app.add_handler(conv_handler)
-app.run_polling()
+async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pc = update.message.text.strip().upper()
+    await update.message.reply_text(f"✅ You sent: {pc}")
+    return ConversationHandler.END
