@@ -1,14 +1,25 @@
 # -*- coding: utf-8 -*-
 
 # main.py
-from telegram.ext import ApplicationBuilder, CommandHandler, ConversationHandler
-from telegram_bot0 import start, START_PC  # импортируешь свою функцию и состояние
 
-app = ApplicationBuilder().token("YOUR_BOT_TOKEN").build()
+import os
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ConversationHandler,
+    filters,
+)
+
+from telegram_bot0 import start, receive_start_pc, START_PC
+
+app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
 
 conv_handler = ConversationHandler(
     entry_points=[CommandHandler("start", start)],
-    states={START_PC: []},  # пока можно оставить пустым
+    states={
+        START_PC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
+    },
     fallbacks=[],
 )
 
