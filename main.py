@@ -1,28 +1,23 @@
-import asyncio
-import os
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    ConversationHandler,
-    filters,
-)
-from telegram_bot0 import start, receive_start_pc, START_PC
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-async def main():
-    app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
+BOT_TOKEN = "вставь_сюда_токен_или_используй_env"
 
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            START_PC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
-        },
-        fallbacks=[],
-    )
+def start(update, context):
+    update.message.reply_text("📍 Send postal code of the start point")
 
-    app.add_handler(conv_handler)
+def echo_pc(update, context):
+    pc = update.message.text.strip().upper()
+    update.message.reply_text(f"✅ You sent: {pc}")
 
-    await app.run_polling()
+def main():
+    updater = Updater(BOT_TOKEN, use_context=True)
+    dp = updater.dispatcher
+
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo_pc))
+
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
