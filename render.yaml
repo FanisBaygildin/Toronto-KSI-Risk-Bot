@@ -2,11 +2,11 @@ services:
   - type: web
     name: ksi-telegram-bot
     runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
     envVars:
       - key: BOT_TOKEN
         sync: false
-    buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
     build:
       environment:
         python: 3.11.9
