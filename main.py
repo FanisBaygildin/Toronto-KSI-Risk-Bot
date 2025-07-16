@@ -1,28 +1,13 @@
-# -*- coding: utf-8 -*-
+from telegram import Update
+from telegram.ext import ContextTypes, ConversationHandler
 
-# main.py
+START_PC = 0
 
-import os
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    ConversationHandler,
-    filters,
-)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text("📍 Send postal code of the start point")
+    return START_PC
 
-from telegram_bot0 import start, receive_start_pc, START_PC
-
-app = ApplicationBuilder().token(os.getenv("BOT_TOKEN")).build()
-
-conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("start", start)],
-    states={
-        START_PC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
-    },
-    fallbacks=[],
-)
-
-app.add_handler(conv_handler)
-
-app.run_polling()
+async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pc = update.message.text.strip().upper()
+    await update.message.reply_text(f"✅ Got it: {pc}")
+    return ConversationHandler.END
