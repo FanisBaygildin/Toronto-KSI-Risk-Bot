@@ -4,4 +4,4 @@
 import asyncio
 from telegram_bot0 import start
 
-asyncio.run(start_bot())
+asyncio.run(start())
