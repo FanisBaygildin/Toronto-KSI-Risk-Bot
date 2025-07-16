@@ -1,10 +1,1 @@
-pandas
-requests
-pytz
-numpy
-scikit-learn==1.6.1
-joblib
-pygeohash
-astral
 python-telegram-bot==20.6
-polyline
