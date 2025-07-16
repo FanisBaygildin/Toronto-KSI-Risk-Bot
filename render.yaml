@@ -4,9 +4,10 @@ services:
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: python main.py
+    build:
+      environment:
+        python: 3.11.9
     envVars:
       - key: BOT_TOKEN
         sync: false
-build:
-  environment:
-    python: 3.11.9
+
