@@ -1,4 +1,12 @@
 # main.py (коротко и надёжно)
+import logging
+
+logging.basicConfig(level=logging.INFO)  # или WARNING — как хочешь
+
+# Заглушаем httpx и httpcore, чтобы не печатали запросы с токеном
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 import os
 import logging
 from telegram.error import TelegramError
