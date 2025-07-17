@@ -23,7 +23,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Отвечаем на /start: просим прислать текст."""
     # update.message: объект Message, пришедший от пользователя (в чате с ботом)
     # reply_text(...) отправляет ответ в тот же чат
-    await update.message.reply_text("👋 Привет! Пришли мне любое сообщение — я сохраню и пришлю обратно.")
+    await update.message.reply_text("👋 Hi! Send me your start point Postal Code")
 
 # --- Handler: текстовые сообщения ---
 async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -35,7 +35,7 @@ async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     context.user_data["last_message"] = text_in
 
     # Отправляем подтверждение + эхо
-    await update.message.reply_text(f"✅ Saved: {text_in}")
+    await update.message.reply_text(f"{text_in}")
 
 # --- Фабрика для Application ---
 def build_application(token: str) -> Application:
