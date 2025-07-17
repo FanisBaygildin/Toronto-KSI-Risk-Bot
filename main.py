@@ -1,9 +1,8 @@
 # main.py (коротко и надёжно)
-import logging
-
-logging.basicConfig(level=logging.INFO)  # или WARNING — как хочешь
 
 # Заглушаем httpx и httpcore, чтобы не печатали запросы с токеном
+import logging
+logging.basicConfig(level=logging.INFO)  # или WARNING — как хочешь
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
