@@ -1,21 +1,22 @@
-# main.py (коротко и надёжно)
-
-# Заглушаем httpx и httpcore, чтобы не печатали запросы с токеном
-import logging
-logging.basicConfig(level=logging.INFO)  # или WARNING — как хочешь
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-
+# main.py
 import os
 import logging
+
 from telegram.error import TelegramError
 from telegram_bot0 import build_application
 
-logging.basicConfig(level=logging.INFO)
+# --- Логирование (настраиваем один раз) -------------------------------
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logging.getLogger("httpx").setLevel(logging.WARNING)     # скрываем запросы с токеном
+logging.getLogger("httpcore").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+# ----------------------------------------------------------------------
 
 def main() -> None:
-    token = os.environ.get("BOT_TOKEN")
+    token = os.getenv("BOT_TOKEN")
     if not token:
         raise RuntimeError("BOT_TOKEN env var not set!")
 
