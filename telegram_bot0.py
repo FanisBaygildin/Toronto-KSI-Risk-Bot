@@ -18,31 +18,18 @@ from telegram.ext import (
     filters,                    # предопределённые фильтры для MessageHandler
 )
 
-# --- Handler: /start ---
+    # Отвечаем на /start: просим прислать текст
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Отвечаем на /start: просим прислать текст."""
-    # update.message: объект Message, пришедший от пользователя (в чате с ботом)
-    # reply_text(...) отправляет ответ в тот же чат
-    await update.message.reply_text("👋 Hi! Send me your start point Postal Code")
+    await update.message.reply_text("👋 Hi! Send me your start point Postal Code")     # update.message: объект Message, пришедший от пользователя (в чате с ботом), reply_text(...) отправляет ответ в тот же чат
 
-# --- Handler: текстовые сообщения ---
+# --- Handler: Сохраняет ответ юзера в user_data и отправляет эхо
 async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Сохраняем текст в user_data и отправляем эхо."""
-    # Забираем текст
-    text_in = (update.message.text or "").strip()
+    text_in = (update.message.text or "").strip()        # Забираем текст, or "" на случай, если пользователь прислал, к примеру, фото или стикер
+    context.user_data["last_message"] = text_in    # Сохраняем в user_data (словарь, поддерживаемый PTB; живёт в памяти процесса)
+    await update.message.reply_text(f"{text_in}")    # Отправляем эхо
 
-    # Сохраняем в user_data (словарь, поддерживаемый PTB; живёт в памяти процесса)
-    context.user_data["last_message"] = text_in
-
-    # Отправляем подтверждение + эхо
-    await update.message.reply_text(f"{text_in}")
-
-# --- Фабрика для Application ---
+# --- Фабрика для Application --- Создаёт и настраивает Application; возвращает готовый объект. Не запускает polling — это делает main.py
 def build_application(token: str) -> Application:
-    """Создаёт и настраивает Application; возвращает готовый объект.
-
-    Не запускает polling — это делает main.py.
-    """
     app = (
         ApplicationBuilder()
         .token(token)            # токен бота от @BotFather (подаём из переменной окружения)
