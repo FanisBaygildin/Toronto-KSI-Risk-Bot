@@ -1,5 +1,5 @@
 # google_maps_route.py
-import os, httpx
+import os, httpx, polyline, geohash2 as geohash
 from typing import List, Dict
 
 BASE_URL = "https://maps.googleapis.com/maps/api/directions/json"
@@ -31,11 +31,20 @@ async def get_routes(origin_pc: str,
     routes = []
     for r in data["routes"][:max_routes]:
         leg = r["legs"][0]
+        poly = r["overview_polyline"]["points"]
+
+        # --- geohash‑5 -------------------------------------------------
+        points = polyline.decode(poly)           # [(lat, lon), …]
+        # берём каждую 5‑ю точку, чтобы не плодить тысячи ячеек
+        hashes = sorted({geohash.encode(lat, lon, precision=5)
+                         for lat, lon in points[::5]})
+
         routes.append(
             {
-                "distance_km": round(leg["distance"]["value"] / 1000, 1),
+                "distance_km":  round(leg["distance"]["value"] / 1000, 1),
                 "duration_text": leg["duration"]["text"],
-                "poly": r["overview_polyline"]["points"],
+                "poly":          poly,
+                "geohash5":      hashes,          # ← новое поле
             }
         )
     return routes
