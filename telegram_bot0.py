@@ -47,6 +47,8 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         for i, r in enumerate(routes)
     ]
     caption = "\n".join(caption_lines)
+    # DEBUG: показываем первые 5 geohash‑ов каждого маршрута
+    # caption += "\n" + "\n".join(f"   {r['geohash5'][:5]}…" for r in routes)
 
     # пытаемся получить статическую карту
     try:
