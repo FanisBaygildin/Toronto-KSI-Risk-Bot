@@ -65,5 +65,5 @@ def build_application(token: str) -> Application:
         fallbacks=[],
     )
     app.add_handler(conv)
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo_text))
+    # app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo_text))
     return app
