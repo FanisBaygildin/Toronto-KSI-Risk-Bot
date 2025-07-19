@@ -8,7 +8,7 @@ from telegram.ext import (
     filters,
     Application,
 )
-from google_maps_route import get_routes
+from google_maps_route import get_routes, static_map
 
 # --- Состояния ---------------------------------------------------------
 START_PC, END_PC = range(2)
