@@ -1,0 +1,62 @@
+# google_maps_route.py
+import os, httpx
+from typing import List, Dict
+
+BASE_URL = "https://maps.googleapis.com/maps/api/directions/json"
+STATIC_URL = "https://maps.googleapis.com/maps/api/staticmap"
+API_KEY = os.getenv("GMAPS_API_KEY")        # Render → Environment
+
+async def get_routes(origin_pc: str,
+                     dest_pc: str,
+                     max_routes: int = 3
+                     ) -> List[Dict[str, str]]:
+    """Возвращает список маршрутов + polyline."""
+    if not API_KEY:
+        raise RuntimeError("GMAPS_API_KEY env var not set!")
+
+    params = {
+        "origin": origin_pc,
+        "destination": dest_pc,
+        "alternatives": "true",
+        "units": "metric",
+        "key": API_KEY,
+    }
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        data = (await client.get(BASE_URL, params=params)).json()
+
+    if data.get("status") != "OK":
+        raise RuntimeError(f"Directions API error: {data.get('status')}")
+
+    routes = []
+    for r in data["routes"][:max_routes]:
+        leg = r["legs"][0]
+        routes.append(
+            {
+                "distance_km": round(leg["distance"]["value"] / 1000, 1),
+                "duration_text": leg["duration"]["text"],
+                "poly": r["overview_polyline"]["points"],
+            }
+        )
+    return routes
+
+
+async def static_map(origin_pc: str,
+                     dest_pc: str,
+                     polylines: List[str],
+                     size: str = "640x400") -> bytes:
+    """Статическая PNG‑карта с несколькими маршрутами."""
+    colors = ["0xFF0000FF", "0x00AA00FF", "0x0000FFFF"]  # красн., зел., синий
+    parts = [
+        f"size={size}",
+        f"markers=label:S|{origin_pc}",
+        f"markers=label:D|{dest_pc}",
+    ]
+    for i, poly in enumerate(polylines):
+        parts.append(f"path=color:{colors[i]}|weight:5|enc:{poly}")
+    parts.append(f"key={API_KEY}")
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(f"{STATIC_URL}?{'&'.join(parts)}")
+        resp.raise_for_status()
+        return resp.content
