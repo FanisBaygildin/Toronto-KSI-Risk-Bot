@@ -8,7 +8,7 @@ from telegram.ext import (
     filters,
     Application,
 )
-from google_maps_route import get_routes, static_map
+from google_maps_route import get_routes
 
 # --- Состояния ---------------------------------------------------------
 START_PC, END_PC = range(2)
@@ -41,27 +41,11 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text("❗ No route found")
         return ConversationHandler.END
 
-    # готовим подпись с расстоянием и временем
-    caption_lines = [
-        f"Route {i+1}: {r['distance_km']} km, {r['duration_text']}"
+    lines = [
+        f"Route {i+1}: {r['distance_km']} km, {r['duration_text']}"
         for i, r in enumerate(routes)
     ]
-    caption = "\n".join(caption_lines)
-    # DEBUG: показываем первые 5 geohash‑ов каждого маршрута
-    # caption += "\n" + "\n".join(f"   {r['geohash5'][:5]}…" for r in routes)
-
-    # пытаемся получить статическую карту
-    try:
-        img_bytes = await static_map(
-            context.user_data["start_pc"],
-            dest_pc,
-            [r["poly"] for r in routes],
-        )
-        await update.message.reply_photo(photo=img_bytes, caption=caption)
-    except Exception as e:
-        # если не вышло — хотя бы текст
-        await update.message.reply_text(caption + f"\n(карту показать не удалось: {e})")
-
+    await update.message.reply_text("\n".join(lines))
     return ConversationHandler.END
 
 # --- эхо вне диалога ---------------------------------------------------
