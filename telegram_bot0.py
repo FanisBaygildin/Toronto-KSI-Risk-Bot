@@ -52,21 +52,21 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text("❗ No route found")
         return ConversationHandler.END
 
-if weather is not None:
-    weather_str = (
-        f"{weather['temp_c']} °C, "
-        f"hum {weather['humidity']} %, "
-        f"wind {weather['wind_kph']} kph"
-    )
-    caption_lines = [f"Current Weather: {weather_str}"]
-else:
-    caption_lines = ["Current Weather: unavailable"]
-
-caption_lines += [
-    f"Route {i+1}: {r['distance_km']} km, {r['duration_text']}"
-    for i, r in enumerate(routes)
-]
-caption = "\n".join(caption_lines)
+    if weather is not None:
+        weather_str = (
+            f"{weather['temp_c']} °C, "
+            f"hum {weather['humidity']} %, "
+            f"wind {weather['wind_kph']} kph"
+        )
+        caption_lines = [f"Current Weather: {weather_str}"]
+    else:
+        caption_lines = ["Current Weather: unavailable"]
+    
+    caption_lines += [
+        f"Route {i+1}: {r['distance_km']} km, {r['duration_text']}"
+        for i, r in enumerate(routes)
+    ]
+    caption = "\n".join(caption_lines)
 
     # пытаемся получить статическую карту
     try:
