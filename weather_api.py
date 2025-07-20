@@ -4,6 +4,7 @@
 и нормализуем признаки под ML‑модель.
 """
 import os, json, requests, datetime as dt, pytz, pandas as pd
+from pathlib import Path
 
 # ----------------------------------------------------------------------
 def build_weather_row() -> pd.Series:
@@ -39,7 +40,8 @@ def build_weather_row() -> pd.Series:
     df.drop(columns=["time"], inplace=True)
 
     # порядок колонок задаёт твой JSON‑файл
-    with open("columns.json") as f:
+    base_dir = Path(__file__).resolve().parent
+    with open(base_dir / "columns.json") as f:
         cols = json.load(f)
     return df[cols].iloc[0]
 # ----------------------------------------------------------------------
