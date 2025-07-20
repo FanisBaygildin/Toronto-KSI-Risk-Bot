@@ -54,9 +54,12 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     if weather is not None:
         weather_str = (
-            f"{weather['temp_c']} °C, "
-            f"hum {weather['humidity']} %, "
-            f"wind {weather['wind_kph']} kph"
+            f"Temperature {weather['temp_c']} °C, "
+            f"Humidity {weather['humidity']} %, "
+            f"Wind {weather['wind_kph']} kph, "
+            f"Dewpoint_c {weather['dewpoint_c']} °C, "
+            f"Visibility {weather['vis_km']} km, "
+            f"Pressure {weather['pressure_mb']} mBar"
         )
         caption_lines = [f"Current Weather: {weather_str}"]
     else:
