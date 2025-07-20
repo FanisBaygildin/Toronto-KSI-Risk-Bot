@@ -1,3 +1,7 @@
+pandas
+numpy
+pytz
+requests
 python-telegram-bot==20.6
 polyline       # декодирование Google‑polyline
 geohash2       # кодирование в geohash
