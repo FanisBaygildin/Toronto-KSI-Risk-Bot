@@ -51,8 +51,7 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     # готовим подпись
     caption_lines = [
-        f"Current Weather: {weather_str}" + \
-        [
+        f"Current Weather: {weather_str}" + [
         f"Route {i+1}: {r['distance_km']} km, {r['duration_text']} "
         f"[{', '.join(r['geohash5'])}]"
         for i, r in enumerate(routes)
