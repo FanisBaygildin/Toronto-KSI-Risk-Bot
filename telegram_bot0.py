@@ -10,6 +10,8 @@ from telegram.ext import (
     Application,
 )
 from google_maps_route import get_routes, static_map
+from weather_api import build_weather_row          # ← новый импорт
+import asyncio                                     # для to_thread
 
 # --- Состояния ---------------------------------------------------------
 START_PC, END_PC = range(2)
@@ -32,32 +34,39 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     context.user_data["dest_pc"] = dest_pc
     await update.message.reply_text("⏳ Calculating routes, please wait…")
 
+    # --- маршруты ---
     try:
         routes = await get_routes(context.user_data["start_pc"], dest_pc)
-        weather = build_weather_row()               # Series
     except Exception as e:
-        await update.message.reply_text(f"❌ Google Maps error: {e}")
+        await update.message.reply_text(f"❌ Google Maps error: {e}")
         return ConversationHandler.END
+
+    # --- погода ---
+    try:
+        weather = await asyncio.to_thread(build_weather_row)
+    except Exception as e:
+        await update.message.reply_text(f"❌ Weather API error: {e}")
+        weather = None                # чтобы дальше не падать
 
     if not routes:
         await update.message.reply_text("❗ No route found")
         return ConversationHandler.END
 
+if weather is not None:
     weather_str = (
         f"{weather['temp_c']} °C, "
         f"hum {weather['humidity']} %, "
         f"wind {weather['wind_kph']} kph"
     )
-    
-    # готовим подпись
-    caption_lines = [
-        f"Current Weather: {weather_str}" + [
-        f"Route {i+1}: {r['distance_km']} km, {r['duration_text']} "
-        f"[{', '.join(r['geohash5'])}]"
-        for i, r in enumerate(routes)
-        ]
-    ]
-    caption = "\n".join(caption_lines)
+    caption_lines = [f"Current Weather: {weather_str}"]
+else:
+    caption_lines = ["Current Weather: unavailable"]
+
+caption_lines += [
+    f"Route {i+1}: {r['distance_km']} km, {r['duration_text']}"
+    for i, r in enumerate(routes)
+]
+caption = "\n".join(caption_lines)
 
     # пытаемся получить статическую карту
     try:
@@ -90,5 +99,4 @@ def build_application(token: str) -> Application:
         fallbacks=[],
     )
     app.add_handler(conv)
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo_text))
     return app
