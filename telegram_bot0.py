@@ -34,6 +34,7 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     try:
         routes = await get_routes(context.user_data["start_pc"], dest_pc)
+        weather = build_weather_row()               # Series
     except Exception as e:
         await update.message.reply_text(f"❌ Google Maps error: {e}")
         return ConversationHandler.END
@@ -42,7 +43,16 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text("❗ No route found")
         return ConversationHandler.END
 
-    # готовим подпись с расстоянием и временем
+    weather_str = (
+        f"{weather['temp_c']} °C, "
+        f"hum {weather['humidity']} %, "
+        f"wind {weather['wind_kph']} kph"
+    )
+    
+    # готовим подпись
+    caption_lines = [
+        f"Current Weather: {weather_str}",
+        
     caption_lines = [
         f"Route {i+1}: {r['distance_km']} km, {r['duration_text']} "
         f"[{', '.join(r['geohash5'])}]"
