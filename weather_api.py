@@ -70,6 +70,6 @@ def weather_df_for_route(geohashes) -> pd.DataFrame:
     ])
 
  if __name__ == "__main__":
-     print(build_weather_row())
+    print(build_weather_row())
     # # demo: создаём df для 3‑х geohash‑ов
     # print(weather_df_for_route(["f2m6p", "f2m6r", "f2m6v"]).head())
