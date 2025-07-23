@@ -55,17 +55,15 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         ]
 
     # ------ KSI‑модель -----------------------------------------
-        model_path = Path(__file__).resolve().parent / "model" / "model.pkl"
-        model = joblib.load(model_path)
-        ksi_probs = [
-            float(model.predict_proba(df)[:, 1].mean())
-            for df in dfs
-        ]  # средний риск по точкам маршрута
+model_path = Path(__file__).resolve().parent / "model" / "model.pkl"
+model: "ProbSumModel" = joblib.load(model_path)
 
-        # df‑ы теперь лежат в списке «dfs» — дальше можно:
-        # • передать в ML‑модель
-        # • сохранить в CSV / log
-        # • отправить пользователю файлом (если нужно)
+ksi_sums = [
+    float(model.predict_sum(df))          # ← сумма p(KSI) по точкам маршрута
+    for df in dfs                         # dfs = [df_route1, df_route2, df_route3]
+]
+
+        # df‑ы теперь лежат в списке «dfs»
 
     except Exception as e:
         await update.message.reply_text(f"❌ Weather API error: {e}")
@@ -89,8 +87,8 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         caption_lines = ["Current Weather: unavailable"]
     
     caption_lines += [
-        f"Route {i+1}: {r['distance_km']} km, {r['duration_text']}, "
-        f"KSI risk {ksi_probs[i]:.1%}"
+        f"Route {i+1}: {r['distance_km']} km, {r['duration_text']}, "
+        f"KSI sum {ksi_sums[i]:.3f}"
         for i, r in enumerate(routes)
     ]
     caption = "\n".join(caption_lines)
