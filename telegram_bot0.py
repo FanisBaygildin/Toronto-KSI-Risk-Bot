@@ -87,7 +87,7 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     
     caption_lines += [
         f"Route {i+1}: {r['distance_km']} km, {r['duration_text']}, "
-        f"KSI sum {ksi_sums[i]:.3f}"
+        f"KSI probability {ksi_sums[i]:.3f}"
         for i, r in enumerate(routes)
     ]
     caption = "\n".join(caption_lines)
