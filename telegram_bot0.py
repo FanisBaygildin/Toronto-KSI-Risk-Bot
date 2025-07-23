@@ -54,20 +54,19 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             for r in routes
         ]
 
-    # ------ KSI‑модель -----------------------------------------
-    model_path = Path(__file__).resolve().parent / "model" / "model.pkl"
-    model: "ProbSumModel" = joblib.load(model_path)
-    
-    ksi_sums = [
-        float(model.predict_sum(df))          # ← сумма p(KSI) по точкам маршрута
-        for df in dfs                         # dfs = [df_route1, df_route2, df_route3]
-    ]
-
-        # df‑ы теперь лежат в списке «dfs»
-
     except Exception as e:
         await update.message.reply_text(f"❌ Weather API error: {e}")
         weather = None
+        dfs = []                # чтобы переменная существовала
+
+    # ------ KSI‑модель ----------------------------------------------
+    model_path = Path(__file__).resolve().parent / "model" / "model.pkl"
+    model = joblib.load(model_path)
+
+    ksi_sums = [
+        float(model.predict_sum(df))
+        for df in dfs
+    ]
 
     if not routes:
         await update.message.reply_text("❗ No route found")
