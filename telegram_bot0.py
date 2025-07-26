@@ -16,13 +16,46 @@ import joblib, numpy as np
 from pathlib import Path
 import asyncio                                     # для to_thread
 
+import os
+from telegram.ext import PicklePersistence
+
 # --- Состояния ---------------------------------------------------------
-START_PC, END_PC = range(2)
+AUTH, START_PC, END_PC = range(3)  # +AUTH
+MAX_AUTH_TRIES = 3
 
 # --- /start ------------------------------------------------------------
-async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text("👋 Hi! Send me your start point Postal Code")
-    return START_PC
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    # Уже авторизован? Сразу к стартовому индексу/PC.
+    if context.user_data.get("auth"):
+        await update.message.reply_text("📍 Send start postal code")
+        return START_PC
+
+    # Первый вход — спросим пароль
+    context.user_data.setdefault("auth_tries", 0)
+    await update.message.reply_text("🔒 Enter access password")
+    return AUTH
+
+
+async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pwd = update.message.text.strip()
+    real = os.getenv("BOT_PASS", "")
+
+    if pwd == real and real:
+        context.user_data["auth"] = True
+        context.user_data.pop("auth_tries", None)
+        await update.message.reply_text("✅ Access granted.\n📍 Send start postal code")
+        return START_PC
+
+    tries = context.user_data.get("auth_tries", 0) + 1
+    context.user_data["auth_tries"] = tries
+
+    if tries >= MAX_AUTH_TRIES:
+        await update.message.reply_text("⛔ Wrong password. Try again later with /start")
+        return ConversationHandler.END
+
+    await update.message.reply_text(f"❌ Wrong password ({tries}/{MAX_AUTH_TRIES}). Try again:")
+    return AUTH
+
 
 # --- получаем start PC -------------------------------------------------
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -116,10 +149,12 @@ def build_application(token: str) -> Application:
 
     conv = ConversationHandler(
         entry_points=[CommandHandler("start", cmd_start)],
-        states={
+        states = {
+            AUTH:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorize)],  # +AUTH
             START_PC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
             END_PC:   [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_end_pc)],
-        },
+        }
+,
         fallbacks=[],
     )
     app.add_handler(conv)
