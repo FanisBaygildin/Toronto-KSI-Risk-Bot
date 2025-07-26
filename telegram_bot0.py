@@ -148,7 +148,7 @@ def build_application(token: str) -> Application:
     app = ApplicationBuilder().token(token).build()
 
     conv = ConversationHandler(
-        entry_points=[CommandHandler("start", cmd_start)],
+        entry_points=[CommandHandler("start", start)],
         states = {
             AUTH:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorize)],  # +AUTH
             START_PC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
