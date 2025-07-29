@@ -1,5 +1,5 @@
 pandas
-scikit-learn           # для model.pkl
+scikit-learn==1.6.1           # для model.pkl
 numpy
 pytz
 requests
