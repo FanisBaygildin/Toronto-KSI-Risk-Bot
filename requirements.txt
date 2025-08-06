@@ -1,10 +1,10 @@
 pandas
-scikit-learn==1.6.1           # для model.pkl
+scikit-learn==1.6.1
 numpy
 pytz
 requests
 python-telegram-bot==20.6
-polyline       # декодирование Google‑polyline
-geohash2       # кодирование в geohash
-joblib                 # быстрая загрузка модели
-!pip install -U optuna
+polyline    # decoding Google‑polyline
+geohash2    # coding в geohash
+joblib
+optuna
