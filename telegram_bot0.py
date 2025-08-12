@@ -45,7 +45,7 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if pwd == real and real:
         context.user_data["auth"] = True
         context.user_data.pop("auth_tries", None)
-        await update.message.reply_text("✅ Access granted!\n📍 Please send your start point Postal Code (for example M6S 5A2)")
+        await update.message.reply_text("📍 Please send the start point postal code (for example M6S 5A2)")
         return START_PC
 
     tries = context.user_data.get("auth_tries", 0) + 1
@@ -63,7 +63,7 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     start_pc = (update.message.text or "").strip().upper()
     context.user_data["start_pc"] = start_pc
-    await update.message.reply_text("✅ Saved!\n📍 Please send your destination point Postal Code (for example M4R 1R3)")
+    await update.message.reply_text("📍 Please send the destination point postal code (for example M4R 1R3)")
     return END_PC
 
 # --- получаем destination PC ------------------------------------------
@@ -71,7 +71,7 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     dest_pc = (update.message.text or "").strip().upper()
     context.user_data["dest_pc"] = dest_pc
-    await update.message.reply_text("⏳ Calculating routes, please wait…")
+    await update.message.reply_text("⏳ Calculating routes…")
 
     # --- маршруты ---
     try:
