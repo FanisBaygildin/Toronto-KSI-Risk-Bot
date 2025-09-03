@@ -3,7 +3,7 @@ import os
 import logging
 
 from telegram.error import TelegramError
-from telegram_bot0 import build_application
+from telegram_bot import build_application
 
 # --- Логирование (настраиваем один раз) -------------------------------
 logging.basicConfig(
