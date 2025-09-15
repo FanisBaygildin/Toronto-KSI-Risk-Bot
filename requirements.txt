@@ -4,7 +4,7 @@ numpy
 pytz
 requests
 python-telegram-bot==20.6
-polyline    # decoding Google‑polyline
-geohash2    # coding в geohash
+polyline
+geohash2
 joblib
 lightgbm
