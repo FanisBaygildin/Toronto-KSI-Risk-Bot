@@ -14,25 +14,25 @@ from google_maps_route import get_routes, static_map
 from weather_api import build_weather_row, weather_df_for_route
 import joblib, numpy as np
 from pathlib import Path
-import asyncio                                     # для to_thread
+import asyncio                                     # for to_thread
 
 import os
 from telegram.ext import PicklePersistence
 
 import logging
 
-# --- Состояния ---------------------------------------------------------
+# --- states ---------------------------------------------------------
 AUTH, START_PC, END_PC = range(3)  # +AUTH
 MAX_AUTH_TRIES = 3
 
 # --- /start ------------------------------------------------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    # Уже авторизован? Сразу к стартовому индексу/PC.
+    # If already authorized
     if context.user_data.get("auth"):
-        await update.message.reply_text("📍 Send start postal code")
+        await update.message.reply_text("📍 Please send the start point postal code (for example M6S 5A2)")
         return START_PC
 
-    # Первый вход — спросим пароль
+    # Authorization
     context.user_data.setdefault("auth_tries", 0)
     await update.message.reply_text("🔒 Enter access password")
     return AUTH
@@ -59,21 +59,20 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return AUTH
 
 
-# --- получаем start PC -------------------------------------------------
+# --- Getting Start PC -------------------------------------------------
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     start_pc = (update.message.text or "").strip().upper()
     context.user_data["start_pc"] = start_pc
     await update.message.reply_text("📍 Please send the destination point postal code (for example M4R 1R3)")
     return END_PC
 
-# --- получаем destination PC ------------------------------------------
-# --- получаем destination PC ------------------------------------------
+# --- Getting Destination PC ------------------------------------------
 async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     dest_pc = (update.message.text or "").strip().upper()
     context.user_data["dest_pc"] = dest_pc
     await update.message.reply_text("⏳ Calculating routes…")
 
-    # --- маршруты ---
+    # --- routes ---
     try:
         routes = await get_routes(context.user_data["start_pc"], dest_pc)
     except Exception as e:
@@ -84,16 +83,16 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text("❗ No route found")
         return ConversationHandler.END
 
-    # --- погода (агрегированный «сейчас») + DataFrame-ы для каждого маршрута ---
+    # --- Current Weather + DataFrames for each route ---
     weather = None
     try:
-        # агрегированная погода для хедера (если твоя build_weather_row это умеет)
+        # агрегированная погода для хедера (если твоя build_weather_row это умеет) ????????
         weather = await asyncio.to_thread(build_weather_row)
     except Exception as e:
         logging.warning("build_weather_row failed: %s", e)
 
-    # Для каждого маршрута пытаемся собрать фичи (DataFrame).
-    # Даже если одна из сборок упадёт — остальные маршруты не теряем.
+    # Getting features and built a DF for each route
+    # Even if one of the DFs crashes, we don't lose the rest
     dfs = []
     for idx, r in enumerate(routes, start=1):
         try:
@@ -101,9 +100,9 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             dfs.append(df)
         except Exception as e:
             logging.warning("weather_df_for_route failed for route %d: %s", idx, e)
-            dfs.append(None)  # маркер «не получилось собрать фичи» для этого маршрута
+            dfs.append(None)    # "failed to collect features" marker for this route
 
-    # ------ KSI-модель ----------------------------------------------
+    # ------ KSI-model ----------------------------------------------
     try:
         model_path = Path(__file__).resolve().parent / "model" / "model.pkl"
         model = joblib.load(model_path)
@@ -111,7 +110,7 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text(f"❌ Model load error: {e}")
         return ConversationHandler.END
 
-    # Считаем риск по каждому маршруту отдельно. Если для маршрута df=None/пустой — ставим score=None.
+    # Calculating risk for each route. If df=None/empty for the route, set score=None.
     pairs = []  # список (route_dict, score_or_None)
     for idx, (r, df) in enumerate(zip(routes, dfs), start=1):
         score = None
@@ -127,7 +126,7 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     logging.info("routes=%d; dfs=%d; scored=%d",
                  len(routes), len(dfs), sum(1 for _, s in pairs if s is not None))
 
-    # ------ Формируем ответ -----------------------------------------
+    # ------ Making the return -----------------------------------------
     if weather is not None:
         weather_str = (
             f"Temperature {weather.get('temp_c','?')} °C, "
@@ -141,7 +140,7 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     else:
         caption_lines = ["Current Weather: unavailable"]
 
-    # Безопасно выводим до N маршрутов (все, что есть). Без индексации по i.
+    # output up to N routes
     for idx, (r, score) in enumerate(pairs, start=1):
         prob_line = f"KSI probability {score*100:.3f} %" if isinstance(score, (int, float)) else "KSI probability n/a"
         caption_lines += [
@@ -150,7 +149,7 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     caption = "\n".join(caption_lines)
 
-    # Пытаемся получить статическую карту (даже если для части маршрутов score=None)
+    # Trying to get a static map (even if score=None for some routes)
     try:
         img_bytes = await static_map(
             context.user_data["start_pc"],
@@ -164,11 +163,11 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     return ConversationHandler.END
 
 
-# --- эхо вне диалога ---------------------------------------------------
+# --- эхо вне диалога --------------------------------------------------- ?????????????????
 async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text((update.message.text or "").strip())
 
-# --- фабрика приложения ------------------------------------------------
+# --- фабрика приложения ------------------------------------------------ ?????????????????
 def build_application(token: str) -> Application:
     app = ApplicationBuilder().token(token).build()
 
