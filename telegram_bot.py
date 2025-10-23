@@ -29,7 +29,7 @@ MAX_AUTH_TRIES = 3
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If already authorized
     if context.user_data.get("auth"):
-        await update.message.reply_text("📍 Please send the start point postal code (for example M6S 5A2)")
+        await update.message.reply_text("📍 Please send the start point postal code (for example M6S5A2)")
         return START_PC
 
     # Authorization
@@ -45,7 +45,7 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if pwd == real and real:
         context.user_data["auth"] = True
         context.user_data.pop("auth_tries", None)
-        await update.message.reply_text("📍 Please send the start point postal code (for example M6S 5A2)")
+        await update.message.reply_text("📍 Please send the start point postal code (for example M6S5A2)")
         return START_PC
 
     tries = context.user_data.get("auth_tries", 0) + 1
@@ -63,7 +63,7 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     start_pc = (update.message.text or "").strip().upper()
     context.user_data["start_pc"] = start_pc
-    await update.message.reply_text("📍 Please send the destination point postal code (for example M4R 1R3)")
+    await update.message.reply_text("📍 Please send the destination point postal code (for example M4R1R3)")
     return END_PC
 
 # --- Getting Destination PC ------------------------------------------
