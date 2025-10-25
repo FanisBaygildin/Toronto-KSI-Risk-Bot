@@ -9,6 +9,7 @@ from telegram.ext import (
     filters,
     Application,
 )
+import os
 from google_maps_route import get_routes, static_map
 from weather_api import build_weather_row, weather_df_for_route
 import joblib, numpy as np
@@ -16,7 +17,6 @@ from pathlib import Path
 import asyncio
 from telegram.ext import PicklePersistence
 import logging
-# import os
 
 
 
