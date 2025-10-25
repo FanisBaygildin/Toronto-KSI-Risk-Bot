@@ -65,11 +65,11 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     real = os.getenv("BOT_PASS", "")     # getting the correct pwd, if doesn't exist return ""
 
     if not real:
-        await update.message.reply_text("⚠️ Internal error: BOT_PASS is not set on the server.")
+        await update.message.reply_text("⚠️ Internal error: the bot pwd not found on the server!")
         return ConversationHandler.END
 
-    if pwd == real:    # not elif as these are 2 independent verifications
-        context.user_data["auth"] = True    # set the user's key 'auth' = True in the dict
+    if pwd == real:                                  # not elif as these are 2 independent verifications
+        context.user_data["auth"] = True             # set the user's key 'auth' = True in the dict
         context.user_data.pop("auth_tries", None)    # failed-attempt counter is cleared by removing the key 'auth_tries'
         await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
         return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
@@ -77,22 +77,36 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     tries = context.user_data.get("auth_tries", 0) + 1    # number of failed attempts for the user
     context.user_data["auth_tries"] = tries               # assign the new value for the user
 
-    if tries >= MAX_AUTH_TRIES:
-        await update.message.reply_text("⛔ Wrong password! You are locked until the next 'cycle'! ;)")    # the user will be locked until Render gets restart
+    if tries >= MAX_AUTH_TRIES:    # the user will be locked until Render gets restart
+        await update.message.reply_text("⛔ Wrong password! You are locked until the next 'cycle'! ;)")
         return ConversationHandler.END
 
-    await update.message.reply_text(f"❌ Wrong password ({tries}/{MAX_AUTH_TRIES}). Try again:")
+    await update.message.reply_text(f"❌ Wrong password! (tries: {tries}/{MAX_AUTH_TRIES}).")
     return AUTH
 
 
-# --- Getting Start PC -------------------------------------------------
+
+# --- Getting Start PC -----------------------------------------------
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    start_pc = (update.message.text or "").strip().upper()
-    context.user_data["start_pc"] = start_pc
+#    start_pc = (update.message.text or "").strip().upper()
+    start_pc = (update.message.text or "").replace(" ", "").upper()
+#    context.user_data["start_pc"] = start_pc
+    
+    # Validate format LNLNLN (no spaces yet)
+    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
+        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNL NLN (e.g. M4R1R3)")
+        return START_PC
+
+    # If valid, reinsert a space between 3rd and 4th characters for display consistency
+    formatted_pc = start_pc[:3] + " " + start_pc[3:]
+    context.user_data["start_pc"] = formatted_pc
+    
     await update.message.reply_text("📍 Now send the destination point postal code (E.g. M4R1R3)")
     return END_PC
 
-# --- Getting Destination PC ------------------------------------------
+
+
+# --- Getting Destination PC -----------------------------------------
 async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     dest_pc = (update.message.text or "").strip().upper()
     context.user_data["dest_pc"] = dest_pc
