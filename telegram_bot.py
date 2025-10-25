@@ -136,7 +136,7 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
             f"Visibility {weather.get('vis_km','?')} km,\n"
             f"Pressure {weather.get('pressure_mb','?')} mBar\n"
         )
-        caption_lines = [f"According to the routes and the current weather conditions:\n": {weather_str}"]
+        caption_lines = [f"According to the routes and the current weather conditions:\n {weather_str}"]
     else:
         caption_lines = ["Current Weather: unavailable"]
 
