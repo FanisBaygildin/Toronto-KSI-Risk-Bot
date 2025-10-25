@@ -42,23 +42,40 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
     
     # Authorization
-    context.user_data.setdefault("auth_tries", 0)
+    context.user_data.setdefault("auth_tries", 0)    # either return the value by the 'auth_tries' key or set it to 0 in the dict
     await update.message.reply_text("🔒 Enter access password")
-    return AUTH
+    return AUTH    # this tells the ConversationHandler to move to the authorization part
 
 
+
+# --- /authorization -------------------------------------------------
+'''
+The functon handles the password check part:
+compares the entered pwd with the real one
+If the pwd is correct:
+    user is marked as authorized (auth=True)
+    failed-attempt counter is cleared
+    the bot asks for the starting postal code and moves to the START_PC state
+If the pwd is wrong:
+    if the user reaches the MAX_AUTH_TRIES, the conversation ends, effectively locking them out
+    else the number of failed attempts (auth_tries) is increased showing how many attempts they’ve used...
+'''
 async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pwd = update.message.text.strip()
-    real = os.getenv("BOT_PASS", "")
+    pwd = update.message.text.strip()    # strip of pwd
+    real = os.getenv("BOT_PASS", "")     # getting the correct pwd, if doesn't exist return ""
 
-    if pwd == real and real:
-        context.user_data["auth"] = True
-        context.user_data.pop("auth_tries", None)
+    if not real:
+        await update.message.reply_text("⚠️ Internal error: BOT_PASS is not set on the server.")
+        return ConversationHandler.END
+
+    if pwd == real:    # not elif as these are 2 independent verifications
+        context.user_data["auth"] = True    # set the user's key 'auth' = True in the dict
+        context.user_data.pop("auth_tries", None)    # failed-attempt counter is cleared by removing the key 'auth_tries'
         await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
-        return START_PC
+        return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
 
-    tries = context.user_data.get("auth_tries", 0) + 1
-    context.user_data["auth_tries"] = tries
+    tries = context.user_data.get("auth_tries", 0) + 1    # number of failed attempts for the user
+    context.user_data["auth_tries"] = tries               # assign the new value for the user
 
     if tries >= MAX_AUTH_TRIES:
         await update.message.reply_text("⛔ Wrong password! You are locked until the next 'cycle'! ;)")    # the user will be locked until Render gets restart
