@@ -9,28 +9,36 @@ from telegram.ext import (
     filters,
     Application,
 )
-
 from google_maps_route import get_routes, static_map
 from weather_api import build_weather_row, weather_df_for_route
 import joblib, numpy as np
 from pathlib import Path
-import asyncio                                     # for to_thread
-
-import os
+import asyncio
 from telegram.ext import PicklePersistence
-
 import logging
+# import os
+
+
 
 # --- states ---------------------------------------------------------
-AUTH, START_PC, END_PC = range(3)  # +AUTH
-MAX_AUTH_TRIES = 3
+AUTH, START_PC, END_PC = range(3)    # current dialog state
+MAX_AUTH_TRIES = 5
 
-# --- /start ------------------------------------------------------------
+
+
+# --- /start ---------------------------------------------------------
+'''
+Asynchronous handler function 'start', which Telegram will call when the user sends /start
+It takes two parameters:
+    update: contains information about the incoming message (who sent it, text, etc.)
+    context: stores per-user data and helper methods (like context.user_data, context.bot, etc.)
+Returns an integer representing the next conversation state (used by ConversationHandler).
+'''
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If already authorized
-    if context.user_data.get("auth"):
+    if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
         await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
-        return START_PC
+        return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
 
     # Authorization
     context.user_data.setdefault("auth_tries", 0)
@@ -52,7 +60,7 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["auth_tries"] = tries
 
     if tries >= MAX_AUTH_TRIES:
-        await update.message.reply_text("⛔ Wrong password. Try again later with /start")
+        await update.message.reply_text("⛔ Wrong password! You are locked until the next "cycle"! ;)")    # the user will be locked until Render gets restart
         return ConversationHandler.END
 
     await update.message.reply_text(f"❌ Wrong password ({tries}/{MAX_AUTH_TRIES}). Try again:")
