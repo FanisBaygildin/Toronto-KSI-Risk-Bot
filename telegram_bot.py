@@ -30,9 +30,9 @@ MAX_AUTH_TRIES = 5
 '''
 Asynchronous handler function 'start', which Telegram will call when the user sends /start
 It takes two parameters:
-    update: contains information about the incoming message (who sent it, text, etc.)
-    context: stores per-user data and helper methods (like context.user_data, context.bot, etc.)
-Returns an integer representing the next conversation state (used by ConversationHandler).
+    update: contains information about the incoming message (who sent it, text, ...)
+    context: stores per-user data and helper methods (like context.user_data, context.bot, ...)
+Returns an integer representing the next conversation state (used by ConversationHandler)
 '''
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If already authorized
@@ -40,6 +40,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
         return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
 
+    
     # Authorization
     context.user_data.setdefault("auth_tries", 0)
     await update.message.reply_text("🔒 Enter access password")
@@ -60,7 +61,7 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data["auth_tries"] = tries
 
     if tries >= MAX_AUTH_TRIES:
-        await update.message.reply_text("⛔ Wrong password! You are locked until the next "cycle"! ;)")    # the user will be locked until Render gets restart
+        await update.message.reply_text("⛔ Wrong password! You are locked until the next 'cycle'! ;)")    # the user will be locked until Render gets restart
         return ConversationHandler.END
 
     await update.message.reply_text(f"❌ Wrong password ({tries}/{MAX_AUTH_TRIES}). Try again:")
