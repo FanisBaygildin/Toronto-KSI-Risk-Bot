@@ -129,14 +129,14 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     # ------ Making the return -----------------------------------------
     if weather is not None:
         weather_str = (
-            f"Temperature {weather.get('temp_c','?')} °C, "
-            f"Humidity {weather.get('humidity','?')} %, "
-            f"Wind {weather.get('wind_kph','?')} kph, "
-            f"Dewpoint_c {weather.get('dewpoint_c','?')} °C, "
-            f"Visibility {weather.get('vis_km','?')} km, "
-            f"Pressure {weather.get('pressure_mb','?')} mBar"
+            f"Temperature {weather.get('temp_c','?')} °C,\n"
+            f"Humidity {weather.get('humidity','?')} %,\n"
+            f"Wind {weather.get('wind_kph','?')} kph,\n"
+            f"Dewpoint_c {weather.get('dewpoint_c','?')} °C,\n"
+            f"Visibility {weather.get('vis_km','?')} km,\n"
+            f"Pressure {weather.get('pressure_mb','?')} mBar\n"
         )
-        caption_lines = [f"Current Weather: {weather_str}"]
+        caption_lines = [f"According to the routes and the current weather conditions:\n": {weather_str}"]
     else:
         caption_lines = ["Current Weather: unavailable"]
 
