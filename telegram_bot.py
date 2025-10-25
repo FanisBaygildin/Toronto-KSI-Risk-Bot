@@ -37,11 +37,11 @@ Returns an integer representing the next conversation state (used by Conversatio
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If already authorized
     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
-    keyboard = [
-                [InlineKeyboardButton("Example: M6S5A2", callback_data="M6S5A2")]
-#                [InlineKeyboardButton("Example: M4R1R3", callback_data="M4R1R3")]
-            ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
+        keyboard = [
+                    [InlineKeyboardButton("Example: M6S5A2", callback_data="M6S5A2")],
+                    [InlineKeyboardButton("Example: M4R1R3", callback_data="M4R1R3")]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
 
         await update.message.reply_text(
             "📍 Please send the start point postal code (e.g. M6S5A2)\n"
