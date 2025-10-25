@@ -1,5 +1,5 @@
 # telegram_bot0.py
-from telegram import Update
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -37,6 +37,18 @@ Returns an integer representing the next conversation state (used by Conversatio
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If already authorized
     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
+    keyboard = [
+                [InlineKeyboardButton("Example: M6S5A2", callback_data="M6S5A2")]
+#                [InlineKeyboardButton("Example: M4R1R3", callback_data="M4R1R3")]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await update.message.reply_text(
+            "📍 Please send the start point postal code (e.g. M6S5A2)\n"
+            "Or tap an example below 👇",
+            reply_markup=reply_markup
+        )
+
         await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
         return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
 
@@ -92,9 +104,9 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     start_pc = (update.message.text or "").replace(" ", "").upper()
 #    context.user_data["start_pc"] = start_pc
     
-    # Validate format LNLNLN (no spaces yet)
-    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
-        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNL NLN (e.g. M4R1R3)")
+    # Validate PC format
+    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):    # using regular expression to check PC format
+        await update.message.reply_text("❌ Invalid postal code format! Please try again! (e.g. M4R1R3)")
         return START_PC
 
     # If valid, reinsert a space between 3rd and 4th characters for display consistency
