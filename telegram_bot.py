@@ -49,7 +49,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_markup=reply_markup
         )
 
-        await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
+#        await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
         return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
 
     
