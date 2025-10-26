@@ -1,5 +1,5 @@
 # telegram_bot0.py
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
@@ -8,7 +8,6 @@ from telegram.ext import (
     ContextTypes,
     filters,
     Application,
-    CallbackQueryHandler
 )
 import os
 from google_maps_route import get_routes, static_map
@@ -19,20 +18,6 @@ import asyncio
 from telegram.ext import PicklePersistence
 import logging
 import re
-
-
-# buttons
-async def on_postal_code_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-
-    # Подменяем сообщение так, будто пользователь ввёл текст
-    update.message = query.message
-    update.message.text = query.data  # "M6S5A2", "M4R1R3", ...
-
-    # Переиспользуем ваш валидатор/логикy из receive_start_pc
-    return await receive_start_pc(update, context)
-
 
 
 # --- states ---------------------------------------------------------
@@ -52,19 +37,7 @@ Returns an integer representing the next conversation state (used by Conversatio
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If already authorized
     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
-        keyboard = [
-                    [InlineKeyboardButton("Example: M6S5A2", callback_data="M6S5A2")],
-                    [InlineKeyboardButton("Example: M4R1R3", callback_data="M4R1R3")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await update.message.reply_text(
-            "📍 Please send the start point postal code (e.g. M6S5A2)\n"
-            "Or tap an example below 👇",
-            reply_markup=reply_markup
-        )
-
-#        await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
+        await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
         return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
 
     
@@ -119,9 +92,9 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     start_pc = (update.message.text or "").replace(" ", "").upper()
 #    context.user_data["start_pc"] = start_pc
     
-    # Validate PC format
-    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):    # using regular expression to check PC format
-        await update.message.reply_text("❌ Invalid postal code format! Please try again! (e.g. M4R1R3)")
+    # Validate format LNLNLN (no spaces yet)
+    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
+        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNL NLN (e.g. M4R1R3)")
         return START_PC
 
     # If valid, reinsert a space between 3rd and 4th characters for display consistency
@@ -249,8 +222,4 @@ def build_application(token: str) -> Application:
         fallbacks=[],
     )
     app.add_handler(conv)
-
-    # обработчик всех callback-кнопок (можно сузить по pattern при желании)
-    # app.add_handler(CallbackQueryHandler(on_postal_code_button))
-    
     return app
