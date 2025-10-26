@@ -113,22 +113,56 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 
-# --- Getting Start PC -----------------------------------------------
-async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#    start_pc = (update.message.text or "").strip().upper()
-    start_pc = (update.message.text or "").replace(" ", "").upper()
-#    context.user_data["start_pc"] = start_pc
+# # --- Getting Start PC -----------------------------------------------
+# async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+# #    start_pc = (update.message.text or "").strip().upper()
+#     start_pc = (update.message.text or "").replace(" ", "").upper()
+# #    context.user_data["start_pc"] = start_pc
     
-    # Validate PC format
-    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):    # using regular expression to check PC format
-        await update.message.reply_text("❌ Invalid postal code format! Please try again! (e.g. M4R1R3)")
+#     # Validate PC format
+#     if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):    # using regular expression to check PC format
+#         await update.message.reply_text("❌ Invalid postal code format! Please try again! (e.g. M4R1R3)")
+#         return START_PC
+
+#     # If valid, reinsert a space between 3rd and 4th characters for display consistency
+#     formatted_pc = start_pc[:3] + " " + start_pc[3:]
+#     context.user_data["start_pc"] = formatted_pc
+    
+#     await update.message.reply_text("📍 Now send the destination point postal code (E.g. M4R1R3)")
+#     return END_PC
+
+
+# --- Getting Start PC ------------------------------------------------
+async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    import re
+    text = (update.message.text or "").strip().upper()
+
+    # Remove all spaces
+    start_pc = re.sub(r"\s+", "", text)
+
+    # Validate format LNLNLN
+    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
+        # --- кнопки с примерами ---
+        keyboard = [
+            [InlineKeyboardButton("Example: M4R 1R3", callback_data="M4R1R3")],
+            [InlineKeyboardButton("Example: M6S 5A2", callback_data="M6S5A2")],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await update.message.reply_text(
+            "❌ Invalid format. Expected LNL NLN (e.g. M4R 1R3).\n"
+            "Tap an example below 👇",
+            reply_markup=reply_markup
+        )
         return START_PC
 
-    # If valid, reinsert a space between 3rd and 4th characters for display consistency
+    # Format and save
     formatted_pc = start_pc[:3] + " " + start_pc[3:]
     context.user_data["start_pc"] = formatted_pc
-    
-    await update.message.reply_text("📍 Now send the destination point postal code (E.g. M4R1R3)")
+
+    await update.message.reply_text(
+        "📍 Now send the destination postal code (e.g. M4R 1R3)"
+    )
     return END_PC
 
 
