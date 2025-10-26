@@ -8,6 +8,7 @@ from telegram.ext import (
     ContextTypes,
     filters,
     Application,
+    CallbackQueryHandler
 )
 import os
 from google_maps_route import get_routes, static_map
@@ -18,6 +19,20 @@ import asyncio
 from telegram.ext import PicklePersistence
 import logging
 import re
+
+
+# buttons
+async def on_postal_code_button(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+
+    # Подменяем сообщение так, будто пользователь ввёл текст
+    update.message = query.message
+    update.message.text = query.data  # "M6S5A2", "M4R1R3", ...
+
+    # Переиспользуем ваш валидатор/логикy из receive_start_pc
+    return await receive_start_pc(update, context)
+
 
 
 # --- states ---------------------------------------------------------
@@ -234,4 +249,8 @@ def build_application(token: str) -> Application:
         fallbacks=[],
     )
     app.add_handler(conv)
+
+    # обработчик всех callback-кнопок (можно сузить по pattern при желании)
+    app.add_handler(CallbackQueryHandler(on_postal_code_button))
+    
     return app
