@@ -17,10 +17,9 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"    
 )
 
-# remove
-# logging.getLogger("httpx").setLevel(logging.WARNING)
-# logging.getLogger("httpcore").setLevel(logging.WARNING)
-# logger = logging.getLogger(__name__)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
 def main() -> None:
