@@ -94,7 +94,7 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     
     # Validate format LNLNLN (no spaces yet)
     if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
-        await update.message.reply_text("❌ Invalid postal code format! E.g. M4R1R3")
+        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNL NLN (e.g. M4R1R3)")
         return START_PC
 
     # If valid, reinsert a space between 3rd and 4th characters for display consistency
