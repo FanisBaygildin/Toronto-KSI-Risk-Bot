@@ -96,8 +96,9 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return START_PC
 
     # If valid, reinsert a space between 3rd and 4th characters for display consistency
-    formatted_pc = start_pc[:3] + " " + start_pc[3:]
-    context.user_data["start_pc"] = formatted_pc
+    # formatted_pc = start_pc[:3] + " " + start_pc[3:]
+    # context.user_data["start_pc"] = formatted_pc
+    context.user_data["start_pc"] = start_pc
     
     await update.message.reply_text("📍 Now send the destination point postal code (E.g. M4R1R3)")
     return END_PC
@@ -114,8 +115,9 @@ async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return END_PC
 
     # If valid, reinsert a space between 3rd and 4th characters for display consistency
-    formatted_pc = dest_pc[:3] + " " + dest_pc[3:]
-    context.user_data["dest_pc"] = formatted_pc
+    # formatted_pc = dest_pc[:3] + " " + dest_pc[3:]
+    # context.user_data["dest_pc"] = formatted_pc
+    context.user_data["dest_pc"] = dest_pc
     
     await update.message.reply_text("⏳ Calculating routes…")
 
