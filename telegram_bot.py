@@ -106,10 +106,10 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 # --- Getting Destination PC -----------------------------------------
 async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    dest_pc = (update.message.text or "").strip().upper()
+    dest_pc = (update.message.text or "").replace(" ", "").upper()
 
     # Validate format LNLNLN
-    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
+    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", dest_pc):
         await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN (e.g. M4R1R3)")
         return END_PC
 
