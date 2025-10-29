@@ -88,13 +88,11 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 # --- Getting Start PC -----------------------------------------------
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#    start_pc = (update.message.text or "").strip().upper()
     start_pc = (update.message.text or "").replace(" ", "").upper()
-#    context.user_data["start_pc"] = start_pc
     
     # Validate format LNLNLN (no spaces yet)
     if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
-        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNL NLN (e.g. M4R1R3)")
+        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN (e.g. M4R1R3)")
         return START_PC
 
     # If valid, reinsert a space between 3rd and 4th characters for display consistency
@@ -109,7 +107,16 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 # --- Getting Destination PC -----------------------------------------
 async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     dest_pc = (update.message.text or "").strip().upper()
-    context.user_data["dest_pc"] = dest_pc
+
+    # Validate format LNLNLN
+    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
+        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN (e.g. M4R1R3)")
+        return END_PC
+
+    # If valid, reinsert a space between 3rd and 4th characters for display consistency
+    formatted_pc = dest_pc[:3] + " " + dest_pc[3:]
+    context.user_data["dest_pc"] = formatted_pc
+    
     await update.message.reply_text("⏳ Calculating routes…")
 
     # --- routes ---
