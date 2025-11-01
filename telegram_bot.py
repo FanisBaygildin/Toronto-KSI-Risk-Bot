@@ -65,6 +65,10 @@ If the pwd is wrong:
 '''
 
 async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    logging.info("authorization ENTRY: chat_id=%s text=%r", update.effective_chat.id if update.effective_chat else None, getattr(update.message, "text", None))
+    if update.message:
+        await update.message.reply_text("✅ /start reached authorization()")  # временно, для проверки
+    
     # If the user is already authorized
     if context.user_data.get("auth"):
         await update.message.reply_text("📍 Please send the start point postal code. E.g. M6S5A2")
