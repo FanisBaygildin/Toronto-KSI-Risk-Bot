@@ -38,16 +38,16 @@ It takes two parameters:
 Returns an integer representing the next conversation state (used by ConversationHandler)
 '''
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    # If the user is already authorized
-    if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
-        await update.message.reply_text("📍 Please send the start point postal code. /nE.g. M6S5A2")
-        return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
+# async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+#     # If the user is already authorized
+#     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
+#         await update.message.reply_text("📍 Please send the start point postal code. /nE.g. M6S5A2")
+#         return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
 
-    # Authorization
-    context.user_data.setdefault("auth_tries", 0)    # either return the value by the 'auth_tries' key or set it to 0 in the dict
-    await update.message.reply_text("🔒 Enter access password")
-    return AUTH_STATE    # this tells the ConversationHandler to move to the authorization part
+#     # Authorization
+#     context.user_data.setdefault("auth_tries", 0)    # either return the value by the 'auth_tries' key or set it to 0 in the dict
+#     await update.message.reply_text("🔒 Enter access password")
+#     return AUTH_STATE    # this tells the ConversationHandler to move to the authorization part
 
 
 
@@ -65,6 +65,16 @@ If the pwd is wrong:
 '''
 
 async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    # If the user is already authorized
+    if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
+        await update.message.reply_text("📍 Please send the start point postal code. /nE.g. M6S5A2")
+        return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
+
+    # Else either return the value by the 'auth_tries' key or set it to 0 if didn't exist
+    context.user_data.setdefault("auth_tries", 0)
+    await update.message.reply_text("🔒 Enter access password")
+    return AUTH_STATE    # this tells the ConversationHandler to move to the authorization part
+    
     pwd = update.message.text.strip()
     real = os.getenv("BOT_PASS", "")     # getting the correct pwd; if doesn't exist return ""
 
@@ -231,9 +241,13 @@ def build_application(token: str) -> Application:
     app = ApplicationBuilder().token(token).build()
 
     conv = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],    # this func will be issued when a user sends '/start'
+        # entry_points=[CommandHandler("start", start)],    # this func will be issued when a user sends '/start'
+        # states = {
+        #     AUTH_STATE:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorization)],
+
+        entry_points=[CommandHandler("auth", authorization)],    # this func will be issued when a user sends '/start'
         states = {
-            AUTH_STATE:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorization)],
+        
             START_STATE: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
             DESTINATION_STATE:   [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_dest_pc)]
         }
