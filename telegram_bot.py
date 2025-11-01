@@ -26,21 +26,24 @@ MAX_TRIES = 5
 
 
 
-# --- /start ---------------------------------------------------------
+# --- /START ---------------------------------------------------------
 '''
+1st func to try:
+if the user is already authorized, go to start postal code
+if not - go to authorization
 Asynchronous handler function 'start', which Telegram will call when the user sends /start
 It takes two parameters:
     update: contains information about the incoming message (who sent it, text, ...)
     context: stores per-user data and helper methods (like context.user_data, context.bot, ...)
 Returns an integer representing the next conversation state (used by ConversationHandler)
 '''
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    # If already authorizationd
+    # If the user is already authorized
     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
         await update.message.reply_text("📍 Please send the start point postal code. E.g. M6S5A2")
         return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
 
-    
     # Authorization
     context.user_data.setdefault("auth_tries", 0)    # either return the value by the 'auth_tries' key or set it to 0 in the dict
     await update.message.reply_text("🔒 Enter access password")
@@ -48,7 +51,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 
-# --- /authorization -------------------------------------------------
+# --- /AUTHORIZATION -------------------------------------------------
 '''
 The functon handles the password check part:
 compares the entered pwd with the real one
@@ -60,9 +63,10 @@ If the pwd is wrong:
     if the user reaches the MAX_TRIES, the conversation ends, effectively locking them out
     else the number of failed attempts (auth_tries) is increased showing how many attempts they’ve used...
 '''
+
 async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     pwd = update.message.text.strip()
-    real = os.getenv("BOT_PASS", "")     # getting the correct pwd, if doesn't exist return ""
+    real = os.getenv("BOT_PASS", "")     # getting the correct pwd; if doesn't exist return ""
 
     if not real:
         await update.message.reply_text("⚠️ Internal error: the bot pwd not found on the server!")
@@ -78,7 +82,7 @@ async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     context.user_data["auth_tries"] = tries               # assign the new value for the user
 
     if tries >= MAX_TRIES:    # the user will be locked until Render gets restart
-        await update.message.reply_text("⛔ Wrong password! You are locked until the next 'cycle'! ;)")
+        await update.message.reply_text("⛔ Wrong password! You are locked until the next 'cycle'!")
         return ConversationHandler.END
 
     await update.message.reply_text(f"❌ Wrong password! (tries: {tries}/{MAX_TRIES}).")
@@ -86,18 +90,15 @@ async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
 
 
 
-# --- Getting Start PC -----------------------------------------------
+# --- RECEIVE START PC -----------------------------------------------
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     start_pc = (update.message.text or "").replace(" ", "").upper()
     
-    # Validate format LNLNLN (no spaces yet)
+    # Validate PC format
     if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
         await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN E.g. M4R1R3")
         return START_STATE
 
-    # If valid, reinsert a space between 3rd and 4th characters for display consistency
-    # formatted_pc = start_pc[:3] + " " + start_pc[3:]
-    # context.user_data["start_pc"] = formatted_pc
     context.user_data["start_pc"] = start_pc
     
     await update.message.reply_text("📍 Now send the destination point postal code. E.g. M4R1R3")
@@ -105,18 +106,15 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 
-# --- Getting Destination PC -----------------------------------------
+# --- RECEIVE DESTINATION PC -----------------------------------------
 async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     dest_pc = (update.message.text or "").replace(" ", "").upper()
 
-    # Validate format LNLNLN
+    # Validate PC format
     if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", dest_pc):
         await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN E.g. M4R1R3")
         return DESTINATION_STATE
 
-    # If valid, reinsert a space between 3rd and 4th characters for display consistency
-    # formatted_pc = dest_pc[:3] + " " + dest_pc[3:]
-    # context.user_data["dest_pc"] = formatted_pc
     context.user_data["dest_pc"] = dest_pc
     
     await update.message.reply_text("⏳ Calculating routes…")
