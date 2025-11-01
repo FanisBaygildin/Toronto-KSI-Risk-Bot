@@ -41,7 +41,7 @@ Returns an integer representing the next conversation state (used by Conversatio
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If the user is already authorized
     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
-        await update.message.reply_text("📍 Please send the start point postal code.", /n"E.g. M6S5A2")
+        await update.message.reply_text("📍 Please send the start point postal code. /nE.g. M6S5A2")
         return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
 
     # Authorization
