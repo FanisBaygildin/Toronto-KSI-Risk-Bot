@@ -66,14 +66,15 @@ If the pwd is wrong:
 
 async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If the user is already authorized
-    if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
-        await update.message.reply_text("📍 Please send the start point postal code. /nE.g. M6S5A2")
-        return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
+    if context.user_data.get("auth"):
+        await update.message.reply_text("📍 Please send the start point postal code. E.g. M6S5A2")
+        return START_STATE
 
-    # Else either return the value by the 'auth_tries' key or set it to 0 if didn't exist
-    context.user_data.setdefault("auth_tries", 0)
-    await update.message.reply_text("🔒 Enter access password")
-    return AUTH_STATE    # this tells the ConversationHandler to move to the authorization part
+    # If not, staying in the AUTH_STATE
+    if "auth_tries" not in context.user_data:
+        context.user_data["auth_tries"] = 0
+        await update.message.reply_text("🔒 Enter access password")
+        return AUTH_STATE
     
     pwd = update.message.text.strip()
     real = os.getenv("BOT_PASS", "")     # getting the correct pwd; if doesn't exist return ""
@@ -242,16 +243,18 @@ def build_application(token: str) -> Application:
 
     conv = ConversationHandler(
         # entry_points=[CommandHandler("start", start)],    # this func will be issued when a user sends '/start'
-        # states = {
-        #     AUTH_STATE:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorization)],
-
-        entry_points=[CommandHandler("auth", authorization)],    # this func will be issued when a user sends '/start'
+        entry_points=[CommandHandler("start", authorization)],    # this func will be issued when a user sends '/start'
         states = {
-        
+            AUTH_STATE:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorization)],
             START_STATE: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
             DESTINATION_STATE:   [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_dest_pc)]
         }
 ,
+        
+        # Обработка “аварийных” ситуаций
+        # fallbacks — список обработчиков, которые вызываются, если пользователь отправил что-то неожиданное или хочет выйти из диалога.
+        # Здесь список пуст ([]), то есть fallback-обработчиков пока нет.
+                            
         fallbacks=[],
     )
     app.add_handler(conv)
