@@ -41,7 +41,7 @@ Returns an integer representing the next conversation state (used by Conversatio
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # If the user is already authorized
     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
-        await update.message.reply_text("📍 Please send the start point postal code. E.g. M6S5A2")
+        await update.message.reply_text("📍 Please send the start point postal code.", /n"E.g. M6S5A2")
         return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
 
     # Authorization
@@ -214,16 +214,28 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text((update.message.text or "").strip())
 
-# --- фабрика приложения ------------------------------------------------ ?????????????????
+
+
+# --- APPLICATION BUILD ------------------------------------------------
+'''
+This function is called from the main.py
+Receives Telegram bot token
+Returns an object of the calss Application of python-telegram-bot library
+app - an object of the bot which is ready for handlers adding
+conv - a conversation handler always starting with start func, 
+        and then depending on the current state of the dialog
+
+'''
+
 def build_application(token: str) -> Application:
     app = ApplicationBuilder().token(token).build()
 
     conv = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
+        entry_points=[CommandHandler("start", start)],    # this func will be issued when a user sends '/start'
         states = {
             AUTH_STATE:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorization)],
             START_STATE: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
-            DESTINATION_STATE:   [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_dest_pc)],
+            DESTINATION_STATE:   [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_dest_pc)]
         }
 ,
         fallbacks=[],
