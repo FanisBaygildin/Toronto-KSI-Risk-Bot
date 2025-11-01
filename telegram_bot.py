@@ -21,8 +21,8 @@ import re
 
 
 # --- states ---------------------------------------------------------
-AUTH, START_PC, END_PC = range(3)    # current dialog state
-MAX_AUTH_TRIES = 5
+AUTH_STATE, START_STATE, DESTINATION_STATE = range(3)    # current dialog state
+MAX_TRIES = 5
 
 
 
@@ -35,16 +35,16 @@ It takes two parameters:
 Returns an integer representing the next conversation state (used by ConversationHandler)
 '''
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    # If already authorized
+    # If already authorizationd
     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
-        await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
-        return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
+        await update.message.reply_text("📍 Please send the start point postal code. E.g. M6S5A2")
+        return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
 
     
     # Authorization
     context.user_data.setdefault("auth_tries", 0)    # either return the value by the 'auth_tries' key or set it to 0 in the dict
     await update.message.reply_text("🔒 Enter access password")
-    return AUTH    # this tells the ConversationHandler to move to the authorization part
+    return AUTH_STATE    # this tells the ConversationHandler to move to the authorization part
 
 
 
@@ -53,15 +53,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 The functon handles the password check part:
 compares the entered pwd with the real one
 If the pwd is correct:
-    user is marked as authorized (auth=True)
+    user is marked as authorizationd (auth=True)
     failed-attempt counter is cleared
-    the bot asks for the starting postal code and moves to the START_PC state
+    the bot asks for the starting postal code and moves to the START_STATE state
 If the pwd is wrong:
-    if the user reaches the MAX_AUTH_TRIES, the conversation ends, effectively locking them out
+    if the user reaches the MAX_TRIES, the conversation ends, effectively locking them out
     else the number of failed attempts (auth_tries) is increased showing how many attempts they’ve used...
 '''
-async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pwd = update.message.text.strip()    # strip of pwd
+async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pwd = update.message.text.strip()
     real = os.getenv("BOT_PASS", "")     # getting the correct pwd, if doesn't exist return ""
 
     if not real:
@@ -71,18 +71,18 @@ async def authorize(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if pwd == real:                                  # not elif as these are 2 independent verifications
         context.user_data["auth"] = True             # set the user's key 'auth' = True in the dict
         context.user_data.pop("auth_tries", None)    # failed-attempt counter is cleared by removing the key 'auth_tries'
-        await update.message.reply_text("📍 Please send the start point postal code (E.g. M6S5A2)")
-        return START_PC    # this tells the ConversationHandler to move to the 'start postal code' part
+        await update.message.reply_text("📍 Please send the start point postal code. E.g. M6S5A2")
+        return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
 
     tries = context.user_data.get("auth_tries", 0) + 1    # number of failed attempts for the user
     context.user_data["auth_tries"] = tries               # assign the new value for the user
 
-    if tries >= MAX_AUTH_TRIES:    # the user will be locked until Render gets restart
+    if tries >= MAX_TRIES:    # the user will be locked until Render gets restart
         await update.message.reply_text("⛔ Wrong password! You are locked until the next 'cycle'! ;)")
         return ConversationHandler.END
 
-    await update.message.reply_text(f"❌ Wrong password! (tries: {tries}/{MAX_AUTH_TRIES}).")
-    return AUTH
+    await update.message.reply_text(f"❌ Wrong password! (tries: {tries}/{MAX_TRIES}).")
+    return AUTH_STATE
 
 
 
@@ -92,27 +92,27 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     
     # Validate format LNLNLN (no spaces yet)
     if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
-        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN (e.g. M4R1R3)")
-        return START_PC
+        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN E.g. M4R1R3")
+        return START_STATE
 
     # If valid, reinsert a space between 3rd and 4th characters for display consistency
     # formatted_pc = start_pc[:3] + " " + start_pc[3:]
     # context.user_data["start_pc"] = formatted_pc
     context.user_data["start_pc"] = start_pc
     
-    await update.message.reply_text("📍 Now send the destination point postal code (E.g. M4R1R3)")
-    return END_PC
+    await update.message.reply_text("📍 Now send the destination point postal code. E.g. M4R1R3")
+    return DESTINATION_STATE
 
 
 
 # --- Getting Destination PC -----------------------------------------
-async def receive_end_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     dest_pc = (update.message.text or "").replace(" ", "").upper()
 
     # Validate format LNLNLN
     if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", dest_pc):
-        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN (e.g. M4R1R3)")
-        return END_PC
+        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN E.g. M4R1R3")
+        return DESTINATION_STATE
 
     # If valid, reinsert a space between 3rd and 4th characters for display consistency
     # formatted_pc = dest_pc[:3] + " " + dest_pc[3:]
@@ -223,9 +223,9 @@ def build_application(token: str) -> Application:
     conv = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states = {
-            AUTH:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorize)],  # +AUTH
-            START_PC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
-            END_PC:   [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_end_pc)],
+            AUTH_STATE:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorization)],
+            START_STATE: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_start_pc)],
+            DESTINATION_STATE:   [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_dest_pc)],
         }
 ,
         fallbacks=[],
