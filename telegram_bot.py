@@ -38,19 +38,6 @@ It takes two parameters:
 Returns an integer representing the next conversation state (used by ConversationHandler)
 '''
 
-# async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     # If the user is already authorized
-#     if context.user_data.get("auth"):    # if the key "auth" exists for the user and is True
-#         await update.message.reply_text("📍 Please send the start point postal code. /nE.g. M6S5A2")
-#         return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
-
-#     # Authorization
-#     context.user_data.setdefault("auth_tries", 0)    # either return the value by the 'auth_tries' key or set it to 0 in the dict
-#     await update.message.reply_text("🔒 Enter access password")
-#     return AUTH_STATE    # this tells the ConversationHandler to move to the authorization part
-
-
-
 # --- /AUTHORIZATION -------------------------------------------------
 '''
 The functon handles the password check part:
@@ -193,7 +180,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         weather_str = (
             f"Temperature {weather.get('temp_c','?')} °C,\n"
             f"Humidity {weather.get('humidity','?')} %,\n"
-            f"Wind {weather.get('wind_kph','?')} kph,\n"
+            f"Wind {weather.get('wind_kph','?')} km/h,\n"
             f"Dewpoint_c {weather.get('dewpoint_c','?')} °C,\n"
             f"Visibility {weather.get('vis_km','?')} km,\n"
             f"Pressure {weather.get('pressure_mb','?')} mBar\n"
@@ -246,7 +233,6 @@ def build_application(token: str) -> Application:
     app = ApplicationBuilder().token(token).build()
 
     conv = ConversationHandler(
-        # entry_points=[CommandHandler("start", start)],    # this func will be issued when a user sends '/start'
         entry_points=[CommandHandler("start", authorization)],    # this func will be issued when a user sends '/start'
         states = {
             AUTH_STATE:     [MessageHandler(filters.TEXT & ~filters.COMMAND, authorization)],
@@ -259,7 +245,7 @@ def build_application(token: str) -> Application:
         # fallbacks — список обработчиков, которые вызываются, если пользователь отправил что-то неожиданное или хочет выйти из диалога.
         # Здесь список пуст ([]), то есть fallback-обработчиков пока нет.
                             
-        fallbacks=[],
+        # fallbacks=[],
     )
     app.add_handler(conv)
     return app
