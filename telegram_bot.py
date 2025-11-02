@@ -20,23 +20,12 @@ import logging
 import re
 
 
+
 # --- states ---------------------------------------------------------
 AUTH_STATE, START_STATE, DESTINATION_STATE = range(3)    # current dialog state
 MAX_TRIES = 5
 
 
-
-# --- /START ---------------------------------------------------------
-'''
-1st func to try:
-if the user is already authorized, go to start postal code
-if not - go to authorization
-Asynchronous handler function 'start', which Telegram will call when the user sends /start
-It takes two parameters:
-    update: contains information about the incoming message (who sent it, text, ...)
-    context: stores per-user data and helper methods (like context.user_data, context.bot, ...)
-Returns an integer representing the next conversation state (used by ConversationHandler)
-'''
 
 # --- /AUTHORIZATION -------------------------------------------------
 '''
@@ -50,7 +39,6 @@ If the pwd is wrong:
     if the user reaches the MAX_TRIES, the conversation ends, effectively locking them out
     else the number of failed attempts (auth_tries) is increased showing how many attempts they’ve used...
 '''
-
 async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # logging.info("authorization ENTRY: chat_id=%s text=%r", update.effective_chat.id if update.effective_chat else None, getattr(update.message, "text", None))
     # if update.message:
@@ -121,9 +109,9 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     
     await update.message.reply_text("⏳ Calculating routes…")
 
-    # --- routes ---
+    # Routes: list of dicts from google_maps_route.py -> get_routes
     try:
-        routes = await get_routes(context.user_data["start_pc"], dest_pc)
+        routes = await get_routes(context.user_data["start_pc"], context.user_data["dest_pc"])
     except Exception as e:
         await update.message.reply_text(f"❌ Google Maps error: {e}")
         return ConversationHandler.END
@@ -132,18 +120,17 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await update.message.reply_text("❗ No route found")
         return ConversationHandler.END
 
-    # --- Current Weather + DataFrames for each route ---
-    weather = None
+    # Current Weather from weather_api.py -> build_weather_row
+    weather = None    # we expect a call to build_weather_row() to return a dict, but just in case - None
     try:
-        # агрегированная погода для хедера (если твоя build_weather_row это умеет) ????????
-        weather = await asyncio.to_thread(build_weather_row)
+        weather = await asyncio.to_thread(build_weather_row)    # DF with weather details 
     except Exception as e:
         logging.warning("build_weather_row failed: %s", e)
 
     # Getting features and built a DF for each route
     # Even if one of the DFs crashes, we don't lose the rest
-    dfs = []
-    for idx, r in enumerate(routes, start=1):
+    dfs = []    # list for a DF per 1 route with weather details
+    for idx, r in enumerate(routes, start=1):    # idx starts from 1 for routes numbering
         try:
             df = await asyncio.to_thread(weather_df_for_route, r["geohash5"])
             dfs.append(df)
@@ -178,12 +165,12 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     # ------ Making the return -----------------------------------------
     if weather is not None:
         weather_str = (
-            f"Temperature {weather.get('temp_c','?')} °C,\n"
-            f"Humidity {weather.get('humidity','?')} %,\n"
-            f"Wind {weather.get('wind_kph','?')} km/h,\n"
-            f"Dewpoint_c {weather.get('dewpoint_c','?')} °C,\n"
-            f"Visibility {weather.get('vis_km','?')} km,\n"
-            f"Pressure {weather.get('pressure_mb','?')} mBar\n"
+            f"Temperature: {weather.get('temp_c','?')} °C,\n"
+            f"Humidity: {weather.get('humidity','?')} %,\n"
+            f"Wind: {weather.get('wind_kph','?')} km/h,\n"
+            f"Dewpoint_c: {weather.get('dewpoint_c','?')} °C,\n"
+            f"Visibility: {weather.get('vis_km','?')} km,\n"
+            f"Pressure: {weather.get('pressure_mb','?')} mBar\n"
         )
         caption_lines = [f"According to the routes and the current weather conditions:\n{weather_str}"]
     else:
@@ -212,9 +199,9 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return ConversationHandler.END
 
 
-# --- эхо вне диалога --------------------------------------------------- ?????????????????
-async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text((update.message.text or "").strip())
+# # --- эхо вне диалога --------------------------------------------------- ?????????????????
+# async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+#     await update.message.reply_text((update.message.text or "").strip())
 
 
 
