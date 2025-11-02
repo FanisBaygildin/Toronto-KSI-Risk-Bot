@@ -199,9 +199,9 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return ConversationHandler.END
 
 
-# # --- эхо вне диалога --------------------------------------------------- ?????????????????
-# async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-#     await update.message.reply_text((update.message.text or "").strip())
+# --- эхо вне диалога --------------------------------------------------- ?????????????????
+async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await update.message.reply_text((update.message.text or "").strip())
 
 
 
