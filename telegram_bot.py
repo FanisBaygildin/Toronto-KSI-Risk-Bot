@@ -245,7 +245,7 @@ def build_application(token: str) -> Application:
         # fallbacks — список обработчиков, которые вызываются, если пользователь отправил что-то неожиданное или хочет выйти из диалога.
         # Здесь список пуст ([]), то есть fallback-обработчиков пока нет.
                             
-        # fallbacks=[],
+        fallbacks=[],
     )
     app.add_handler(conv)
     return app
