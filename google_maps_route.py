@@ -6,7 +6,7 @@ BASE_URL = "https://maps.googleapis.com/maps/api/directions/json"
 STATIC_URL = "https://maps.googleapis.com/maps/api/staticmap"
 API_KEY = os.getenv("GMAPS_API_KEY")
 
-async def get_routes(origin_pc: str,
+async def get_routes(start_pc: str,
                      dest_pc: str,
                      max_routes: int = 3
                      ) -> List[Dict[str, str]]:
@@ -15,7 +15,7 @@ async def get_routes(origin_pc: str,
         raise RuntimeError("GMAPS_API_KEY env var not set!")
 
     params = {
-        "origin": origin_pc,
+        "origin": start_pc,
         "destination": dest_pc,
         "alternatives": "true",
         "units": "metric",
@@ -50,7 +50,7 @@ async def get_routes(origin_pc: str,
     return routes
 
 
-async def static_map(origin_pc: str,
+async def static_map(start_pc: str,
                      dest_pc: str,
                      polylines: List[str],
                      size: str = "640x400") -> bytes:
@@ -58,7 +58,7 @@ async def static_map(origin_pc: str,
     colors = ["0xFF0000FF", "0x00AA00FF", "0x0000FFFF"]  # Red, Green, Blue
     parts = [
         f"size={size}",
-        f"markers=label:S|{origin_pc}",
+        f"markers=label:S|{start_pc}",
         f"markers=label:D|{dest_pc}",
     ]
     for i, poly in enumerate(polylines):
