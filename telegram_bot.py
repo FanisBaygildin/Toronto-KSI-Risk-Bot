@@ -197,7 +197,9 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             f"Visibility: {weather.get('vis_km','?')} km,\n"
             f"Pressure: {weather.get('pressure_mb','?')} mBar\n"
         )
-        caption_lines = [f"According to the current weather conditions:\n{weather_str}"]
+        caption_lines = [f"According to the current weather conditions:\n{weather_str}",
+                         "and according the routes KSI probability is as follows:"
+                        ]
     else:
         caption_lines = ["Current Weather: unavailable"]
 
@@ -210,9 +212,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         )
 
         caption_lines += [
-            "and the routes, KSI probability is as follows:\n",
-            f"Route {idx} ({color_name} Line): {prob_line}, {r.get('distance_km','?')} km, "
-            f"{r.get('duration_text','?')}"
+            f"Route {idx} ({r.get('distance_km','?')} km, {r.get('duration_text','?')}", {color_name} Line): {prob_line}"
         ]
   
     # for idx, (r, score) in enumerate(pairs, start=1):
