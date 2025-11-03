@@ -40,11 +40,6 @@ If the pwd is wrong:
     else the number of failed attempts (auth_tries) is increased showing how many attempts they’ve used...
 '''
 async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    # logging.info("authorization ENTRY: chat_id=%s text=%r", update.effective_chat.id if update.effective_chat else None, getattr(update.message, "text", None))
-    # if update.message:
-    #     await update.message.reply_text("✅ /start reached authorization()")  # временно, для проверки
-    
-    # If the user is already authorized
     if context.user_data.get("auth"):
         await update.message.reply_text("📍 Please send the start point postal code. \nE.g. M6S5A2")
         return START_STATE
@@ -95,10 +90,7 @@ INVALID_PC = "❌ Invalid postal code format! \nExpected format: LNLNLN \nE.g. M
 # --- RECEIVE START PC -----------------------------------------------
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     start_pc = validate_postal_code(update.message.text)
-    # start_pc = (update.message.text or "").replace(" ", "").upper()
-    
-    # Validate PC format
-    # if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
+
     if not start_pc:
         await update.message.reply_text(INVALID_PC)
         return START_STATE
@@ -113,10 +105,7 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 # --- RECEIVE DESTINATION PC -----------------------------------------
 async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     dest_pc = validate_postal_code(update.message.text)
-    # dest_pc = (update.message.text or "").replace(" ", "").upper()
 
-    # Validate PC format
-    # if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", dest_pc):
     if not dest_pc:
         await update.message.reply_text(INVALID_PC)
         return DESTINATION_STATE
@@ -198,7 +187,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             f"Pressure: {weather.get('pressure_mb','?')} mBar\n"
         )
         caption_lines = [f"According to the current weather conditions:\n{weather_str}",
-                         "and according the routes KSI probability is as follows:"
+                         "KSI probability per a route is as follows:"
                         ]
     else:
         caption_lines = ["Current Weather: unavailable"]
@@ -215,12 +204,6 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             f"Route {idx} ({color_name} Line, {r.get('distance_km','?')} km): {prob_line}"
             ]
   
-    # for idx, (r, score) in enumerate(pairs, start=1):
-    #     prob_line = f"KSI probability {score*100:.3f} %" if isinstance(score, (int, float)) else "KSI probability n/a"
-    #     caption_lines += [
-    #         f"Route {idx}: {r.get('distance_km','?')} km, {r.get('duration_text','?')}, {prob_line}"
-    #     ]
-
     caption = "\n".join(caption_lines)
 
     # Trying to get a static map (even if score=None for some routes)
