@@ -26,29 +26,49 @@ async def get_routes(start_pc: str,
 
     '''
     open an asynchronous HTTP client with a 10 seconds timeout
-    Then sends a GET request to BASE_URL with the above parameters
-    await waits for the response; .json() parses the JSON reply into a Python dictionary
+    then sends a GET request to BASE_URL with the above parameters
+    await waits for the response; .json() parses the JSON reply into a Python dict
     '''
     async with httpx.AsyncClient(timeout=10) as client:
         data = (await client.get(BASE_URL, params=params)).json()
 
     '''
     Google Directions API responses always include a "status" field
-    If it isn’t "OK" (e.g., "ZERO_RESULTS", "REQUEST_DENIED", "OVER_QUERY_LIMIT"),
+    if it isn’t "OK" (e.g., "ZERO_RESULTS", "REQUEST_DENIED", "OVER_QUERY_LIMIT"),
     the function raises an exception with the returned status text
     '''
     if data.get("status") != "OK":
         raise RuntimeError(f"Directions API error: {data.get('status')}")
 
+    '''
+    When we request a route via Google Directions API, it returns a structure as follows:
+    json
+    {
+      "routes": [
+        {
+          "summary": "Gardiner Expy and Yonge St",
+          "legs": [
+            {
+              "distance": { "text": "9.4 km", "value": 9400 },
+              "duration": { "text": "15 mins", "value": 900 },
+              "start_address": "M6S 5A2, Toronto, ON, Canada",
+              "end_address": "M4R 1R3, Toronto, ON, Canada",
+              "steps": [ ... list of step by step instructions ... ]
+            }
+          ],
+          "overview_polyline": { "points": "encoded_polyline_string" }
+        }
+      ]
+    }
+    '''
     routes = []    # a list for the final processed route dictionaries
     # iterate through the list of routes returned by Google Maps
     for r in data["routes"][:max_routes]:
-        leg = r["legs"][0]
-        poly = r["overview_polyline"]["points"]
+        leg = r["legs"][0]                          # taking distance
+        poly = r["overview_polyline"]["points"]     # extracts the encoded polyline string that represents the entire route path
 
         # --- geohash‑5 -------------------------------------------------
-        points = polyline.decode(poly)           # [(lat, lon), …]
-        # take each 5th point
+        points = polyline.decode(poly)           # decoding intoa list of tuples [(lat, lon), …]
         hashes = sorted({geohash.encode(lat, lon, precision=5)
                          for lat, lon in points[::5]})
 
@@ -57,7 +77,7 @@ async def get_routes(start_pc: str,
                 "distance_km":  round(leg["distance"]["value"] / 1000, 1),
                 "duration_text": leg["duration"]["text"],
                 "poly":          poly,
-                "geohash5":      hashes,
+                "geohash5":      hashes
             }
         )
     return routes
