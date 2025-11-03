@@ -46,7 +46,7 @@ async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     
     # If the user is already authorized
     if context.user_data.get("auth"):
-        await update.message.reply_text("📍 Please send the start point postal code. E.g. M6S5A2")
+        await update.message.reply_text("📍 Please send the start point postal code. \nE.g. M6S5A2")
         return START_STATE
 
     # If not, staying in the AUTH_STATE
@@ -65,14 +65,14 @@ async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     if pwd == real:                                  # not elif as these are 2 independent verifications
         context.user_data["auth"] = True             # set the user's key 'auth' = True in the dict
         context.user_data.pop("auth_tries", None)    # failed-attempt counter is cleared by removing the key 'auth_tries'
-        await update.message.reply_text("📍 Please send the start point postal code. E.g. M6S5A2")
+        await update.message.reply_text("📍 Please send the start point postal code. \nE.g. M6S5A2")
         return START_STATE    # this tells the ConversationHandler to move to the 'start postal code' part
 
     tries = context.user_data.get("auth_tries", 0) + 1    # number of failed attempts for the user
     context.user_data["auth_tries"] = tries               # assign the new value for the user
 
     if tries >= MAX_TRIES:    # the user will be locked until Render gets restart
-        await update.message.reply_text("⛔ Wrong password! You are locked until the next 'cycle'!")
+        await update.message.reply_text("⛔ Wrong password! \nYou are locked until the next 'cycle'!")
         return ConversationHandler.END
 
     await update.message.reply_text(f"❌ Wrong password! (tries: {tries}/{MAX_TRIES}).")
@@ -89,6 +89,9 @@ def validate_postal_code(text: str) -> str | None:
     return None
 
 
+INVALID_PC = "❌ Invalid postal code format! /nExpected format: \nLNLNLN E.g. M4R1R3"
+
+
 # --- RECEIVE START PC -----------------------------------------------
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     start_pc = validate_postal_code(update.message.text)
@@ -97,12 +100,12 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     # Validate PC format
     # if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
     if not start_pc:
-        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN E.g. M4R1R3")
+        await update.message.reply_text(INVALID_PC)
         return START_STATE
 
     context.user_data["start_pc"] = start_pc
     
-    await update.message.reply_text("📍 Now send the destination point postal code. E.g. M4R1R3")
+    await update.message.reply_text("📍 Now send the destination point postal code. \nE.g. M4R1R3")
     return DESTINATION_STATE
 
 
@@ -115,7 +118,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     # Validate PC format
     # if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", dest_pc):
     if not dest_pc:
-        await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN E.g. M4R1R3")
+        await update.message.reply_text(INVALID_PC)
         return DESTINATION_STATE
 
     context.user_data["dest_pc"] = dest_pc
@@ -126,7 +129,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     try:
         routes = await get_routes(context.user_data["start_pc"], context.user_data["dest_pc"])
     except Exception as e:
-        await update.message.reply_text(f"❌ Google Maps error: {e}")
+        await update.message.reply_text(f"❌ Google Maps error: \n{e}")
         return ConversationHandler.END
 
     if not routes:
@@ -148,7 +151,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             df = await asyncio.to_thread(weather_df_for_route, r["geohash5"])
             dfs.append(df)
         except Exception as e:
-            logging.warning("weather_df_for_route failed for route %d: %s", idx, e)
+            logging.warning("weather_df_for_route failed for route: \n%d: %s", idx, e)
             dfs.append(None)    # "failed to collect features" marker for this route
 
     # ------ KSI-model ----------------------------------------------
@@ -156,7 +159,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         model_path = Path(__file__).resolve().parent / "model" / "model.pkl"
         model = joblib.load(model_path)
     except Exception as e:
-        await update.message.reply_text(f"❌ Model load error: {e}")
+        await update.message.reply_text(f"❌ Model load error: \n{e}")
         return ConversationHandler.END
 
     # Calculating risk for each route. If df=None/empty for the route, set score=None.
