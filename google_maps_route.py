@@ -43,9 +43,9 @@ async def get_routes(start_pc: str,
 
     routes = []    # a list for the final processed route dictionaries
     # iterate through the list of routes returned by Google Maps
-    for r in data["routes"][:max_routes]:
-        leg = r["legs"][0]
-        poly = r["overview_polyline"]["points"]
+    for route in data["routes"][:max_routes]:
+        leg = route["legs"][0]
+        poly = route["overview_polyline"]["points"]
 
         # --- geohash‑5 -------------------------------------------------
         points = polyline.decode(poly)           # [(lat, lon), …]
