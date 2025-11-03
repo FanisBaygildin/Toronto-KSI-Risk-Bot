@@ -202,11 +202,23 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         caption_lines = ["Current Weather: unavailable"]
 
     # output up to N routes
+    COLOR_NAMES = ["Red", "Green", "Blue"]
     for idx, (r, score) in enumerate(pairs, start=1):
-        prob_line = f"KSI probability {score*100:.3f} %" if isinstance(score, (int, float)) else "KSI probability n/a"
+        color_name = COLOR_NAMES[idx - 1]
+        prob_line = (
+            f"KSI probability {score*100:.3f} %"
+            if isinstance(score, (int, float)) else "KSI probability n/a"
+        )
         caption_lines += [
-            f"Route {idx}: {r.get('distance_km','?')} km, {r.get('duration_text','?')}, {prob_line}"
+            f"Route {idx} ({color_name} Line): {r.get('distance_km','?')} km, "
+            f"{r.get('duration_text','?')}, {prob_line}"
         ]
+  
+    # for idx, (r, score) in enumerate(pairs, start=1):
+    #     prob_line = f"KSI probability {score*100:.3f} %" if isinstance(score, (int, float)) else "KSI probability n/a"
+    #     caption_lines += [
+    #         f"Route {idx}: {r.get('distance_km','?')} km, {r.get('duration_text','?')}, {prob_line}"
+    #     ]
 
     caption = "\n".join(caption_lines)
 
