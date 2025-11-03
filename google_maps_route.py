@@ -6,14 +6,16 @@ BASE_URL = "https://maps.googleapis.com/maps/api/directions/json"
 STATIC_URL = "https://maps.googleapis.com/maps/api/staticmap"
 API_KEY = os.getenv("GMAPS_API_KEY")
 
+"""Returns list of routes + polyline"""
 async def get_routes(start_pc: str,
                      dest_pc: str,
                      max_routes: int = 3
                      ) -> List[Dict[str, str]]:
-    """Returns list of routes + polyline"""
     if not API_KEY:
         raise RuntimeError("GMAPS_API_KEY env var not set!")
 
+    # a dictionary of query parameters to send with the HTTP request
+    # it'll be automatically encoded into the request URL
     params = {
         "origin": start_pc,
         "destination": dest_pc,
@@ -22,13 +24,24 @@ async def get_routes(start_pc: str,
         "key": API_KEY,
     }
 
+    '''
+    open an asynchronous HTTP client with a 10 seconds timeout
+    Then sends a GET request to BASE_URL with the above parameters
+    await waits for the response; .json() parses the JSON reply into a Python dictionary
+    '''
     async with httpx.AsyncClient(timeout=10) as client:
         data = (await client.get(BASE_URL, params=params)).json()
 
+    '''
+    Google Directions API responses always include a "status" field
+    If it isn’t "OK" (e.g., "ZERO_RESULTS", "REQUEST_DENIED", "OVER_QUERY_LIMIT"),
+    the function raises an exception with the returned status text
+    '''
     if data.get("status") != "OK":
         raise RuntimeError(f"Directions API error: {data.get('status')}")
 
-    routes = []
+    routes = []    # a list for the final processed route dictionaries
+    # iterate through the list of routes returned by Google Maps
     for r in data["routes"][:max_routes]:
         leg = r["legs"][0]
         poly = r["overview_polyline"]["points"]
