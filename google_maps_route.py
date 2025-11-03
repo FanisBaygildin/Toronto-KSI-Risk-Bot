@@ -88,7 +88,7 @@ async def static_map(start_pc: str,
                      polylines: List[str],
                      size: str = "640x400") -> bytes:
     """PNG-map with routes"""
-    colors = ["0xFF0000FF", "0x00AA00FF", "0x0000FFFF"]  # Red, Green, Blue
+    colors = ["0xFF0000FF", "0x00AA00FF", "0x0000FFFF"]  # Route 1 - Red, Route 2 - Green, Route 3 - Blue
     parts = [
         f"size={size}",
         f"markers=label:S|{start_pc}",
