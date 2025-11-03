@@ -1,14 +1,14 @@
 # telegram_bot0.py
 from telegram import Update
 from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    MessageHandler,
-    ConversationHandler,
-    ContextTypes,
-    filters,
-    Application,
-)
+                        ApplicationBuilder,
+                        CommandHandler,
+                        MessageHandler,
+                        ConversationHandler,
+                        ContextTypes,
+                        filters,
+                        Application,
+                        )
 import os
 from google_maps_route import get_routes, static_map
 from weather_api import build_weather_row, weather_df_for_route
@@ -125,7 +125,16 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     
     await update.message.reply_text("⏳ Calculating routes…")
 
-    # Routes: list of dicts from google_maps_route.py -> get_routes
+    '''
+    Giving start_pc and dest_pc to google_maps_route.py -> get_routes
+    getting list of dicts with:
+    {
+    "distance_km":  round(leg["distance"]["value"] / 1000, 1),
+    "duration_text": leg["duration"]["text"],
+    "poly":          poly,
+    "geohash5":      hashes,
+    }
+        '''
     try:
         routes = await get_routes(context.user_data["start_pc"], context.user_data["dest_pc"])
     except Exception as e:
