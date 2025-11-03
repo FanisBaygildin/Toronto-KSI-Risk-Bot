@@ -212,7 +212,8 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         )
 
         caption_lines += [
-            f"Route {idx} ({r.get('distance_km','?')} km, {r.get('duration_text','?')}", {color_name} Line): {prob_line}"
+            f"Route {idx} ({color_name} Line): {r.get('distance_km','?')} km, "
+            f"{r.get('duration_text','?')}, {prob_line}"
         ]
   
     # for idx, (r, score) in enumerate(pairs, start=1):
