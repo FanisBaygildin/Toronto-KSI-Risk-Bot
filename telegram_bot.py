@@ -212,9 +212,8 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         )
 
         caption_lines += [
-            f"Route {idx} ({color_name} Line): {r.get('distance_km','?')} km, "
-            f"{r.get('duration_text','?')}, {prob_line}"
-        ]
+            f"Route {idx} ({color_name} Line, {r.get('distance_km','?')} km): {prob_line}"
+            ]
   
     # for idx, (r, score) in enumerate(pairs, start=1):
     #     prob_line = f"KSI probability {score*100:.3f} %" if isinstance(score, (int, float)) else "KSI probability n/a"
