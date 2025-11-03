@@ -79,13 +79,24 @@ async def authorization(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     return AUTH_STATE
 
 
+# --- POSTAL CODE FORMAT CHECK ---------------------------------------
+def validate_postal_code(text: str) -> str | None:
+    if not text:
+        return None
+    code = text.replace(" ", "").upper()
+    if re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", code):
+        return code
+    return None
+
 
 # --- RECEIVE START PC -----------------------------------------------
 async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    start_pc = (update.message.text or "").replace(" ", "").upper()
+    start_pc = validate_postal_code(update.message.text)
+    # start_pc = (update.message.text or "").replace(" ", "").upper()
     
     # Validate PC format
-    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
+    # if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", start_pc):
+    if not start_pc:
         await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN E.g. M4R1R3")
         return START_STATE
 
@@ -98,10 +109,12 @@ async def receive_start_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 # --- RECEIVE DESTINATION PC -----------------------------------------
 async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    dest_pc = (update.message.text or "").replace(" ", "").upper()
+    dest_pc = validate_postal_code(update.message.text)
+    # dest_pc = (update.message.text or "").replace(" ", "").upper()
 
     # Validate PC format
-    if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", dest_pc):
+    # if not re.fullmatch(r"[A-Z]\d[A-Z]\d[A-Z]\d", dest_pc):
+    if not dest_pc:
         await update.message.reply_text("❌ Invalid postal code format! Expected format: LNLNLN E.g. M4R1R3")
         return DESTINATION_STATE
 
