@@ -89,7 +89,7 @@ def validate_postal_code(text: str) -> str | None:
     return None
 
 
-INVALID_PC = "❌ Invalid postal code format! /nExpected format: \nLNLNLN E.g. M4R1R3"
+INVALID_PC = "❌ Invalid postal code format! \nExpected format: LNLNLN \nE.g. M4R1R3"
 
 
 # --- RECEIVE START PC -----------------------------------------------
