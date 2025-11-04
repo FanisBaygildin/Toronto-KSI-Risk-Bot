@@ -6,7 +6,7 @@ import os, json, requests, datetime as dt, pytz, pandas as pd, geohash2
 from pathlib import Path
 
 
-# --- pd.Series WITH WEATHER DETAILS ----------------------------------------
+# --- CURRENT HOUR WEATHER pd.Series ----------------------------------------
 def build_weather_row() -> pd.Series:
     api_key = os.getenv("WEATHER_API_KEY")
     if not api_key:
@@ -35,7 +35,7 @@ def build_weather_row() -> pd.Series:
     
     hours = forecastday[0]["hour"]    # list of forecast per hour for all 24 hrs of today
     
-    # 4) Looking for the current hour
+    # 4) Looking for the current hour in the list 'hours'
     try:
         hour_block = next(
             h for h in hours
@@ -46,36 +46,43 @@ def build_weather_row() -> pd.Series:
         raise RuntimeError(f"WeatherAPI: no exact hour match for {now:%Y-%m-%d %H:00} in forecast")
 
 
+    # convert a dict into a df
     df = pd.json_normalize(hour_block)[[
-        "time", "temp_c", "dewpoint_c", "humidity",
-        "wind_kph", "vis_km", "pressure_mb"
+        "time", "temp_c", "dewpoint_c", "humidity", "wind_kph", "vis_km", "pressure_mb"
     ]]
 
     df["time"] = pd.to_datetime(df["time"])
+    
     df["Month"] = df["time"].dt.month
-    df["Day"]   = df["time"].dt.day
-    df["Hour"]  = df["time"].dt.hour
+    df["Day"] = df["time"].dt.day
+    # df["weekday"] = df["time"].dt.weekday
+    df["Hour"] = df["time"].dt.hour
+    
     df.drop(columns=["time"], inplace=True)
 
-    # порядок колонок задаёт твой JSON‑файл
+    # columns order for the model
     base_dir = Path(__file__).resolve().parent
     with open(base_dir / "columns.json") as f:
         cols = json.load(f)
-    return df[cols].iloc[0]
+    return df[cols].iloc[0]    # using .iloc[0] to make it Series for the model
+    
   
 # ➊  DataFrame для ОДНОГО маршрута
 #     geohashes : List[str]  (уже отсортированный список geohash5)
 #     ➜ DataFrame с колонками:
 #       Month, Day, temp_c, dewpoint_c, humidity,
 #       wind_kph, vis_km, pressure_mb, Hour, Latitude, Longitude
-# ----------------------------------------------------------------------
+# --- TEST DF -------------------------------------------------------------------
+'''
+Making a DF for a route with the same weather rows per each lat, lon pair of features
+'''
 def weather_df_for_route(geohashes) -> pd.DataFrame:
-    # базовый «ряд» погоды на текущий час
+    # convert weather Series to Dict to add it for each geohash point
     base = build_weather_row().to_dict()
 
     rows = []
     for gh in geohashes:
-        lat, lon = geohash2.decode(gh)           # → (lat, lon)
+        lat, lon = geohash2.decode(gh)
         rec = base.copy()
         rec["Latitude"]  = lat
         rec["Longitude"] = lon
