@@ -1,44 +1,48 @@
 # weather_api.py
 """
-Получаем фактическую погоду в Торонто на текущий час
-и нормализуем признаки под ML‑модель.
+Getting the actual current hour weather in Toronto
 """
 import os, json, requests, datetime as dt, pytz, pandas as pd, geohash2
 from pathlib import Path
 
-# ----------------------------------------------------------------------
+
+# --- pd.Series WITH WEATHER DETAILS ----------------------------------------
 def build_weather_row() -> pd.Series:
-    api_key = os.getenv("WEATHER_API_KEY")          # Render → Environment
+    api_key = os.getenv("WEATHER_API_KEY")
     if not api_key:
-        raise RuntimeError("WEATHER_API_KEY not set")
+        raise RuntimeError("WEATHER_API_KEY Not Found")
 
     location = "Toronto"
     tz = pytz.timezone("America/Toronto")
-    now = dt.datetime.now(tz).replace(minute=0, second=0, microsecond=0)
+    now = dt.datetime.now(tz).replace(minute=0, second=0, microsecond=0)    # current hour
 
-    # 1) Берём forecast.json за сегодня (почасовой прогноз)
+    # 1) Making of parameters for weather request
+    # no need: aqi — air quality; alerts
     params = {"key": api_key, "q": location, "days": 1, "aqi": "no", "alerts": "no"}
-    data = requests.get("https://api.weatherapi.com/v1/forecast.json", params=params, timeout=30).json()
+    data = requests.get("https://api.weatherapi.com/v1/forecast.json",
+                        params=params,
+                        timeout=30    # 30 sec to get an answer
+                       ).json()
     
-    # 2) Явная проверка на ошибку от API (они приходят внутри JSON даже при HTTP 200)
+    # 2) Check for an error in JSON (even with 200 OK there can be an error)
     if "error" in data:
         raise RuntimeError(f"WeatherAPI error: {data['error']}")
     
-    # 3) Защита от пустых списков
+    # 3) Check if nothing received
     forecastday = data.get("forecast", {}).get("forecastday", [])
     if not forecastday or not forecastday[0].get("hour"):
         raise RuntimeError("WeatherAPI: empty forecastday/hour for today")
     
-    hours = forecastday[0]["hour"]
+    hours = forecastday[0]["hour"]    # list of forecast per hour for all 24 hrs of today
     
-    # 4) Строгое совпадение часа (без «ближайшего»!)
+    # 4) Looking for the current hour
     try:
         hour_block = next(
             h for h in hours
             if dt.datetime.fromtimestamp(h["time_epoch"], tz).replace(minute=0, second=0, microsecond=0) == now
         )
     except StopIteration:
-        # Точного часа нет — сообщаем понятной ошибкой (без «подстановок»)
+        # if the current hour is not found
         raise RuntimeError(f"WeatherAPI: no exact hour match for {now:%Y-%m-%d %H:00} in forecast")
 
 
