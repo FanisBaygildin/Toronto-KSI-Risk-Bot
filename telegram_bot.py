@@ -152,7 +152,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             logging.warning("weather_df_for_route failed for route: \n%d: %s", idx, e)
             dfs.append(None)    # "failed to collect features" marker for this route
 
-    # ------ KSI-model ----------------------------------------------
+    # ------ KSI-model ------------------------------------------------
     try:
         model_path = Path(__file__).resolve().parent / "model" / "model.pkl"
         model = joblib.load(model_path)
@@ -176,7 +176,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     logging.info("routes=%d; dfs=%d; scored=%d",
                  len(routes), len(dfs), sum(1 for _, s in pairs if s is not None))
 
-    # ------ Making the return -----------------------------------------
+    # ------ Making the return ----------------------------------------
     if weather is not None:
         weather_str = (
             f"Temperature: {weather.get('temp_c','?')} °C,\n"
@@ -220,13 +220,13 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     return ConversationHandler.END
 
 
-# --- эхо вне диалога --------------------------------------------------- ?????????????????
+# --- ECHO ------------------------------------------------------------
 async def echo_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text((update.message.text or "").strip())
 
 
 
-# --- APPLICATION BUILD ------------------------------------------------
+# --- APPLICATION BUILD -----------------------------------------------
 '''
 This function is called from the main.py
 Receives Telegram bot token
@@ -249,9 +249,9 @@ def build_application(token: str) -> Application:
         }
 ,
         
-        # Обработка “аварийных” ситуаций
-        # fallbacks — список обработчиков, которые вызываются, если пользователь отправил что-то неожиданное или хочет выйти из диалога.
-        # Здесь список пуст ([]), то есть fallback-обработчиков пока нет.
+        # Handling “emergency” situations
+        # fallbacks — a list of handlers that are called if the user has sent something unexpected or wants to exit the dialog
+        # the list is empty here, meaning there are no fallback handlers yet
                             
         fallbacks=[],
     )
