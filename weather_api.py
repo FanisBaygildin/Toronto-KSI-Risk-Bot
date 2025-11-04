@@ -4,7 +4,10 @@ from pathlib import Path
 
 
 
-# --- CURRENT HOUR WEATHER pd.Series ----------------------------------------
+# --- CURRENT WEATHER ----------------------------------------
+'''
+Getting current weather details as pd.Series
+'''
 def build_weather_row() -> pd.Series:
     api_key = os.getenv("WEATHER_API_KEY")
     if not api_key:
