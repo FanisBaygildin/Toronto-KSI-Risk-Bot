@@ -54,10 +54,10 @@ def build_weather_row() -> pd.Series:
 
     df["time"] = pd.to_datetime(df["time"])
     
-    df["Month"] = df["time"].dt.month
-    df["Day"] = df["time"].dt.day
-    # df["weekday"] = df["time"].dt.weekday
-    df["Hour"] = df["time"].dt.hour
+    df["month"] = df["time"].dt.month
+    df["day"] = df["time"].dt.day
+    df["weekday"] = df["time"].dt.weekday
+    df["hour"] = df["time"].dt.hour
     
     df.drop(columns=["time"], inplace=True)
 
