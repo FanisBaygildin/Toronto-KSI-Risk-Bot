@@ -1,9 +1,7 @@
 # weather_api.py
-"""
-Getting the actual current hour weather in Toronto
-"""
 import os, json, requests, datetime as dt, pytz, pandas as pd, geohash2
 from pathlib import Path
+
 
 
 # --- CURRENT HOUR WEATHER pd.Series ----------------------------------------
@@ -67,15 +65,11 @@ def build_weather_row() -> pd.Series:
     # return df[cols].iloc[0]    # using .iloc[0] to make it Series for the model
     return df.iloc[0]    # using .iloc[0] to make it Series for the model
     
-  
-# ➊  DataFrame для ОДНОГО маршрута
-#     geohashes : List[str]  (уже отсортированный список geohash5)
-#     ➜ DataFrame с колонками:
-#       Month, Day, temp_c, dewpoint_c, humidity,
-#       wind_kph, vis_km, pressure_mb, Hour, Latitude, Longitude
-# --- TEST DF -------------------------------------------------------------------
+
+
+# --- TEST DF ---------------------------------------------------------------
 '''
-Making a DF for a route with the same weather rows per each lat, lon pair of features
+Making a test DF for a route with the same weather rows per each lat, lon pair of features
 '''
 def weather_df_for_route(geohashes) -> pd.DataFrame:
     # convert weather Series to Dict to add it for each geohash point
