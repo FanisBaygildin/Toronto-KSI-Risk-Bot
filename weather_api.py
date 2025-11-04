@@ -82,8 +82,8 @@ def weather_df_for_route(geohashes) -> pd.DataFrame:
     for gh in geohashes:
         lat, lon = geohash2.decode(gh)
         rec = base.copy()
-        rec["Latitude"]  = lat
-        rec["Longitude"] = lon
+        rec["latitude"]  = lat
+        rec["longitude"] = lon
         rows.append(rec)
 
     base_dir = Path(__file__).resolve().parent
