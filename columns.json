@@ -1,1 +1,1 @@
-["Month", "Day", "temp_c", "dewpoint_c", "humidity", "wind_kph", "vis_km", "pressure_mb", "Hour", "Latitude", "Longitude"]
+["month", "day", "weekday", "hour", "temp_c", "dewpoint_c", "humidity", "wind_kph", "vis_km", "pressure_mb", "latitude", "longitude"]
