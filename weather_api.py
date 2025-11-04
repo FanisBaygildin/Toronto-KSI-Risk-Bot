@@ -61,10 +61,11 @@ def build_weather_row() -> pd.Series:
     df.drop(columns=["time"], inplace=True)
 
     # columns order for the model
-    base_dir = Path(__file__).resolve().parent
-    with open(base_dir / "columns.json") as f:
-        cols = json.load(f)
-    return df[cols].iloc[0]    # using .iloc[0] to make it Series for the model
+    # base_dir = Path(__file__).resolve().parent
+    # with open(base_dir / "columns.json") as f:
+    #     cols = json.load(f)
+    # return df[cols].iloc[0]    # using .iloc[0] to make it Series for the model
+    return df.iloc[0]    # using .iloc[0] to make it Series for the model
     
   
 # ➊  DataFrame для ОДНОГО маршрута
@@ -88,11 +89,18 @@ def weather_df_for_route(geohashes) -> pd.DataFrame:
         rec["Longitude"] = lon
         rows.append(rec)
 
-    return pd.DataFrame(rows, columns=[
-        "Month", "Day", "temp_c", "dewpoint_c", "humidity",
-        "wind_kph", "vis_km", "pressure_mb", "Hour",
-        "Latitude", "Longitude",
-    ])
+    base_dir = Path(__file__).resolve().parent
+    with open(base_dir / "columns.json") as f:
+        cols = json.load(f)
+
+    # Возвращаем DataFrame с нужным порядком
+    return pd.DataFrame(rows)[cols]
+
+    # return pd.DataFrame(rows, columns=[
+    #     "Month", "Day", "temp_c", "dewpoint_c", "humidity",
+    #     "wind_kph", "vis_km", "pressure_mb", "Hour",
+    #     "Latitude", "Longitude"
+    # ])
 
 if __name__ == "__main__":
     print(build_weather_row())
