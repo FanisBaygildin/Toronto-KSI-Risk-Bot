@@ -166,7 +166,8 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         score = None
         try:
             if df is not None and getattr(df, "empty", False) is False:
-                score = float(model.predict_sum(df))
+                # score = float(model.predict_sum(df))
+                score = float(model.predict_proba(df)[:, 1].sum())
             else:
                 logging.warning("Route %d: empty/None DF -> score=None", idx)
         except Exception as e:
