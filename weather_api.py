@@ -54,10 +54,10 @@ def build_weather_row() -> pd.Series:
 
     df["time"] = pd.to_datetime(df["time"])
     
-    df["month"] = df["time"].dt.month
-    df["day"] = df["time"].dt.day
-    df["weekday"] = df["time"].dt.weekday
-    df["hour"] = df["time"].dt.hour
+    df["Month"] = df["time"].dt.month
+    df["Day"] = df["time"].dt.day
+    # df["weekday"] = df["time"].dt.weekday
+    df["Hour"] = df["time"].dt.hour
     
     df.drop(columns=["time"], inplace=True)
 
@@ -82,8 +82,8 @@ def weather_df_for_route(geohashes) -> pd.DataFrame:
     for gh in geohashes:
         lat, lon = geohash2.decode(gh)
         rec = base.copy()
-        rec["latitude"]  = lat
-        rec["longitude"] = lon
+        rec["Latitude"]  = lat
+        rec["Longitude"] = lon
         rows.append(rec)
 
     base_dir = Path(__file__).resolve().parent
