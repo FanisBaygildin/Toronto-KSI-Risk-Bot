@@ -1,13 +1,12 @@
 # weather_api.py
+"""
+Getting the actual current hour weather in Toronto
+"""
 import os, json, requests, datetime as dt, pytz, pandas as pd, geohash2
 from pathlib import Path
 
 
-
-# --- CURRENT WEATHER ----------------------------------------
-'''
-Getting current weather details as pd.Series
-'''
+# --- CURRENT HOUR WEATHER pd.Series ----------------------------------------
 def build_weather_row() -> pd.Series:
     api_key = os.getenv("WEATHER_API_KEY")
     if not api_key:
@@ -68,11 +67,15 @@ def build_weather_row() -> pd.Series:
     # return df[cols].iloc[0]    # using .iloc[0] to make it Series for the model
     return df.iloc[0]    # using .iloc[0] to make it Series for the model
     
-
-
-# --- TEST DF ---------------------------------------------------------------
+  
+# ➊  DataFrame для ОДНОГО маршрута
+#     geohashes : List[str]  (уже отсортированный список geohash5)
+#     ➜ DataFrame с колонками:
+#       Month, Day, temp_c, dewpoint_c, humidity,
+#       wind_kph, vis_km, pressure_mb, Hour, Latitude, Longitude
+# --- TEST DF -------------------------------------------------------------------
 '''
-Making a test DF for a route with the same weather rows per each lat, lon pair of features
+Making a DF for a route with the same weather rows per each lat, lon pair of features
 '''
 def weather_df_for_route(geohashes) -> pd.DataFrame:
     # convert weather Series to Dict to add it for each geohash point
@@ -99,7 +102,7 @@ def weather_df_for_route(geohashes) -> pd.DataFrame:
     #     "Latitude", "Longitude"
     # ])
 
-# if __name__ == "__main__":
-#     print(build_weather_row())
+if __name__ == "__main__":
+    print(build_weather_row())
     # # demo: создаём df для 3‑х geohash‑ов
     # print(weather_df_for_route(["f2m6p", "f2m6r", "f2m6v"]).head())
