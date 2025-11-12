@@ -1,4 +1,14 @@
 # telegram_bot0.py
+'''
+1. Getting /start from a user in chat
+2. Checking pwd
+3. Getting Start PC
+4. Getting Destination PC
+5. Sending both PCs to google_maps_route.py
+6. Getting distance, duration, poly, geohash5
+7. 
+'''
+
 from telegram import Update
 from telegram.ext import (
                         ApplicationBuilder,
@@ -134,7 +144,7 @@ async def receive_dest_pc(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         await update.message.reply_text("❗ No route found")
         return ConversationHandler.END
 
-    # Current Weather from weather_api.py -> build_weather_row
+    # Current weather from weather_api.py -> build_weather_row
     weather = None    # we expect a call to build_weather_row() to return a dict, but just in case - None
     try:
         weather = await asyncio.to_thread(build_weather_row)    # DF with weather details 
